@@ -146,3 +146,106 @@
   .intertitle-overlay.kind-story #intertitleSubtitle{width:70vw;font-size:clamp(10px,2.2vw,14px)!important;margin-top:10px!important}
   .intertitle-overlay.kind-story > small{margin-top:12px!important;font-size:8px!important}
 }
+
+/* ===== v0.19 LIMBUS-STYLE LANDSCAPE / FLOW POLISH ===== */
+/* Keep the narrative canvas near 16:9 on ultrawide phones. The unused sides become calm black letterbox space. */
+html,body{background:#030405!important}
+.screen{
+  inset:0 auto 0 50%!important;
+  width:min(100vw,calc(100dvh * 1.7777778))!important;
+  height:100dvh!important;
+  transform:translateX(-50%);
+  box-shadow:0 0 48px rgba(0,0,0,.78);
+}
+
+/* A tighter dialogue band, closer to compact narrative-game composition than edge-to-edge mobile UI. */
+.story-screen:not(.cinematic-text-mode) .dialogue-panel{
+  left:7.5%!important;right:7.5%!important;bottom:max(10px,env(safe-area-inset-bottom))!important;
+  width:auto!important;
+  background:linear-gradient(90deg,rgba(10,11,13,.96),rgba(15,15,16,.93) 72%,rgba(10,11,13,.88))!important;
+  box-shadow:0 10px 28px #0008,inset 0 1px rgba(232,199,126,.035)!important;
+}
+.story-screen:not(.cinematic-text-mode) .dialogue-text{max-width:74ch!important}
+.story-screen .place-card{left:4.2%!important}
+
+/* Active cast reads as a compact group; inactive cast recedes instead of stretching to the far edges. */
+.story-screen .actor:not(.active){filter:brightness(.70) saturate(.72)!important;opacity:.66!important}
+.story-screen .actor.active{filter:brightness(1.05) saturate(1)!important;opacity:1!important;z-index:8!important}
+
+/* Opening narration is not typewritten or tap-driven: whole line fades in, holds, then fades away. */
+.story-screen.flow-auto-opening .dialogue-panel{
+  pointer-events:none!important;background:transparent!important;border:0!important;box-shadow:none!important;
+}
+.story-screen.flow-auto-opening .dialogue-panel small,.story-screen.flow-auto-opening .speaker,.story-screen.flow-auto-opening .line-mode{display:none!important}
+.story-screen.flow-auto-opening .dialogue-text{
+  opacity:0!important;transition:opacity .34s ease!important;
+  font-family:Georgia,"Noto Serif KR",serif!important;font-size:clamp(20px,2.35vw,33px)!important;line-height:1.55!important;
+  text-align:center!important;max-width:min(900px,78vw)!important;margin:auto!important;text-shadow:0 3px 20px #000!important;
+}
+.story-screen.flow-auto-opening.flow-auto-opening-visible .dialogue-text{opacity:1!important}
+
+/* Fronde memory: full image stays through the rest of SCENE 02 and is never clipped above the dialogue HUD. */
+.flow-persistent-special{
+  position:absolute;inset:0;z-index:9;background:#050608;display:grid;place-items:center;pointer-events:none;overflow:hidden;
+}
+.flow-persistent-special img{width:100%;height:100%;object-fit:contain;object-position:center;background:#050608;filter:none!important}
+.story-screen.flow-persistent-memory #specialLayer{opacity:0!important;pointer-events:none!important}
+.story-screen.flow-persistent-memory .actor-layer,.story-screen.flow-persistent-memory .place-card{opacity:0!important}
+.story-screen.flow-persistent-memory .stage-vignette{opacity:.16!important}
+
+/* Anne's accession report remains visible as a pinned dossier until SCENE 04 ends. */
+.flow-pinned-document{
+  position:absolute;right:5.2%;top:9%;z-index:11;width:min(205px,22%);height:54%;pointer-events:none;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+  padding:7px;background:rgba(8,9,11,.74);border:1px solid rgba(214,173,91,.34);box-shadow:0 12px 28px #0009;transform:rotate(1deg);
+}
+.flow-pinned-document img{width:100%;height:calc(100% - 20px);object-fit:contain;object-position:center}
+.flow-pinned-document span{font-size:9px;letter-spacing:.05em;color:#cdbb91;white-space:nowrap}
+.story-screen.flow-pinned-doc-active #propLayer{opacity:0!important;pointer-events:none!important}
+
+/* Character inner monologue appears in the visual center, not at the bottom HUD. */
+.story-screen:not(.cinematic-text-mode) .dialogue-panel.monologue{
+  left:50%!important;right:auto!important;top:50%!important;bottom:auto!important;transform:translate(-50%,-50%)!important;
+  width:min(760px,68%)!important;height:auto!important;min-height:0!important;max-height:none!important;
+  padding:24px 30px!important;text-align:center!important;border:0!important;border-top:1px solid rgba(154,182,207,.34)!important;border-bottom:1px solid rgba(154,182,207,.25)!important;
+  background:linear-gradient(90deg,transparent,rgba(7,10,15,.88) 13%,rgba(7,10,15,.88) 87%,transparent)!important;
+}
+.story-screen .dialogue-panel.monologue .speaker{position:static!important;display:block!important;margin:0 auto 8px!important;text-align:center!important;max-width:none!important;height:auto!important;background:none!important;border:0!important;box-shadow:none!important}
+.story-screen .dialogue-panel.monologue .dialogue-text{text-align:center!important;margin:auto!important;font-family:Georgia,"Noto Serif KR",serif!important;font-style:italic!important}
+.story-screen .dialogue-panel.monologue small{display:none!important}
+
+/* ???: a hard black warning screen, centered red typewriter text. */
+.story-screen:has(.dialogue-panel[data-speaker-group="unknown"]:not(.hidden)){background:#000!important}
+.story-screen:has(.dialogue-panel[data-speaker-group="unknown"]:not(.hidden)) .hud,
+.story-screen:has(.dialogue-panel[data-speaker-group="unknown"]:not(.hidden)) .place-card,
+.story-screen:has(.dialogue-panel[data-speaker-group="unknown"]:not(.hidden)) .actor-layer,
+.story-screen:has(.dialogue-panel[data-speaker-group="unknown"]:not(.hidden)) .prop-layer,
+.story-screen:has(.dialogue-panel[data-speaker-group="unknown"]:not(.hidden)) .stage-vignette{opacity:0!important}
+.story-screen:has(.dialogue-panel[data-speaker-group="unknown"]:not(.hidden)) .stage{background:#000!important}
+.story-screen:has(.dialogue-panel[data-speaker-group="unknown"]:not(.hidden)) .stage:before{opacity:0!important}
+.story-screen:not(.cinematic-text-mode) .dialogue-panel[data-speaker-group="unknown"]{
+  left:50%!important;right:auto!important;top:50%!important;bottom:auto!important;transform:translate(-50%,-50%)!important;
+  width:78%!important;height:auto!important;min-height:0!important;max-height:none!important;padding:24px 28px!important;
+  border:0!important;background:transparent!important;box-shadow:none!important;text-align:center!important;
+}
+.story-screen .dialogue-panel[data-speaker-group="unknown"] .speaker{
+  position:static!important;display:block!important;margin:0 auto 14px!important;height:auto!important;max-width:none!important;
+  background:none!important;border:0!important;box-shadow:none!important;color:#8f1f22!important;text-align:center!important;
+  font:800 clamp(12px,1.2vw,16px) Georgia,"Noto Serif KR",serif!important;letter-spacing:.30em!important;
+}
+.story-screen .dialogue-panel[data-speaker-group="unknown"] .dialogue-text{
+  color:#d84a4f!important;text-align:center!important;font:760 clamp(22px,3.15vw,42px)/1.5 Georgia,"Noto Serif KR",serif!important;
+  text-shadow:0 0 12px rgba(197,42,47,.35),0 3px 18px #000!important;max-width:none!important;
+}
+.story-screen .dialogue-panel[data-speaker-group="unknown"] .line-mode{display:none!important}
+.story-screen .dialogue-panel[data-speaker-group="unknown"] small{left:50%!important;right:auto!important;transform:translateX(-50%);color:#6b3335!important}
+
+@media(max-width:650px) and (orientation:landscape){
+  .story-screen:not(.cinematic-text-mode) .dialogue-panel{left:5.5%!important;right:5.5%!important}
+  .flow-pinned-document{right:4%;top:8%;width:21%;height:52%;padding:4px}
+  .flow-pinned-document span{font-size:7px}
+  .story-screen.flow-auto-opening .dialogue-text{font-size:clamp(15px,2.8vw,20px)!important;max-width:76vw!important}
+  .story-screen:not(.cinematic-text-mode) .dialogue-panel.monologue{width:76%!important;padding:18px 20px!important}
+  .story-screen:not(.cinematic-text-mode) .dialogue-panel[data-speaker-group="unknown"]{width:84%!important}
+  .story-screen .dialogue-panel[data-speaker-group="unknown"] .dialogue-text{font-size:clamp(18px,4.2vw,28px)!important}
+}
