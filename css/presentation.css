@@ -1,0 +1,35 @@
+/* Final presentation contract: geometry never depends on speaker or text length. */
+:root{--hud-h:48px;--dialog-h:116px}
+.story-screen .stage{top:var(--hud-h);bottom:0;filter:none!important}
+.stage:before{background-size:cover!important}
+.story-screen .actor-layer{bottom:var(--dialog-h)}
+.story-screen .actor{transform:none!important;translate:none!important;animation:none!important}
+.story-screen .actor.waiting-entry,.story-screen .actor.entering{opacity:0!important}
+.actor-img{inset:-3px!important;width:calc(100% + 6px)!important;height:calc(100% + 6px)!important;object-fit:fill!important;object-position:center!important;clip-path:inset(7px)}
+.story-screen:not(.cinematic-text-mode) .dialogue-panel{
+ inset:auto max(16px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))!important;
+ height:var(--dialog-h)!important;min-height:var(--dialog-h)!important;max-height:var(--dialog-h)!important;
+ border-radius:3px;border:1px solid #806638;background:#111316ee;
+ padding:28px 20px 20px;box-shadow:0 6px 22px #0005;transition:none!important;overflow:hidden;
+}
+.story-screen:not(.cinematic-text-mode) .speaker{top:5px;left:20px;border:0;box-shadow:none;background:none;padding:0;height:22px;max-width:70%;font-size:13px}
+.story-screen:not(.cinematic-text-mode) .line-mode{top:8px;right:20px}
+.story-screen:not(.cinematic-text-mode) .dialogue-text{font:500 16px/1.45 system-ui,sans-serif;max-height:68px;overflow:auto;white-space:normal}
+.story-screen .hud{opacity:1!important;pointer-events:auto!important}
+.story-screen .hud .scene-meta,.story-screen #menuBtn{opacity:1!important;pointer-events:auto!important}
+.story-screen .place-card{opacity:1!important}
+.story-screen.cinematic-text-mode .hud{opacity:0!important;pointer-events:none!important}
+.stage-vignette{background:linear-gradient(0deg,#080a0e82,transparent 38%),linear-gradient(90deg,#080a0e24,transparent 17%,transparent 83%,#080a0e24)!important}
+.stage .caption-fx{top:5%;font-size:13px;max-width:70%;padding:8px 12px}
+.stage .prop-layer{bottom:var(--dialog-h)}
+.stage .special-layer{bottom:var(--dialog-h)}
+.special-image{object-fit:contain;animation:none}
+.debate-character{overflow:hidden}
+.debate-character img{height:100%!important;width:auto!important;max-width:none!important;object-fit:fill!important;clip-path:inset(5px)!important}
+.debate-anne img{transform:translateX(-2%)!important}
+.debate-mp img{transform:translateX(2%)!important}
+.story-screen .stage.bump,.story-screen .stage.freeze-frame{animation:none}
+@media(max-height:420px){:root{--hud-h:44px;--dialog-h:104px}
+ .story-screen:not(.cinematic-text-mode) .dialogue-text{font-size:14px;line-height:1.4;max-height:58px}
+}
+@media(prefers-reduced-motion:reduce){.actor,.stage,.dialogue-panel{transition:none!important}}

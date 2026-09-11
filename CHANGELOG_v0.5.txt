@@ -1,0 +1,4 @@
+v0.5 integrated asset build
+- images connected
+- title/end art applied
+- charles flash special overlay connected

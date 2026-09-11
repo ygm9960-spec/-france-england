@@ -1,0 +1,7 @@
+const CACHE='sun-king-queen-v0.15-20260911';
+const APP_SHELL=['./css/presentation.css','./js/portraitLayout.js','./','./index.html','./css/style.css','./js/storyData.js','./js/debateData.js','./js/stageMap.js','./js/assetMap.js','./js/audioMap.js','./js/visualMap.js','./js/directorMap.js','./js/app.js'];
+self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(APP_SHELL)).then(()=>self.skipWaiting())));
+self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('sun-king-queen-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
+async function networkFirst(req){const cache=await caches.open(CACHE);try{const res=await fetch(req);if(res&&res.ok)cache.put(req,res.clone());return res}catch{const hit=await cache.match(req);return hit||Response.error()}}
+async function cacheFirst(req){const cache=await caches.open(CACHE);const hit=await cache.match(req);if(hit)return hit;const res=await fetch(req);if(res&&res.ok)cache.put(req,res.clone());return res}
+self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;const u=new URL(e.request.url);if(u.origin!==location.origin)return;const dynamic=e.request.mode==='navigate'||['script','style','document'].includes(e.request.destination)||/\.(?:js|css|html)$/.test(u.pathname);e.respondWith(dynamic?networkFirst(e.request):cacheFirst(e.request))});
