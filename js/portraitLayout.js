@@ -1,4 +1,5 @@
-// Approximate source-pixel face height and eye position, manually calibrated.
+// v0.21 head-safe automatic portrait layout.
+// Approximate source-pixel face height / eye position. Scene-specific manual coordinates are intentionally not used.
 window.PORTRAIT_METRICS={
  louis14:[1152,768,120,106,603],anne_louis:[1152,768,130,145,591],
  french_official:[768,1152,180,149,447],french_reporter:[768,1152,180,149,447],
@@ -8,14 +9,20 @@ window.PORTRAIT_METRICS={
  james1:[768,1152,180,155,384],charles1:[768,1152,180,155,384],james2:[768,1152,180,155,384]
 };
 window.portraitFrames=function(cast,width,height){
- const known=cast.filter(e=>PORTRAIT_METRICS[e.id]),cap=cast.length>=3?.43:.64;
- const face=Math.min(height*.155,...known.map(e=>{const m=PORTRAIT_METRICS[e.id];return width*cap*m[2]/m[0]}));
- // Keep every cutout's lower edge behind the dialogue panel while retaining
- // the same face scale and eye line for the whole cast.
- const eye=Math.max(height*.22,height+12-Math.min(...known.map(e=>{const m=PORTRAIT_METRICS[e.id];return (m[1]-m[3])*face/m[2]})));
+ const known=cast.filter(e=>PORTRAIT_METRICS[e.id]);
+ if(!known.length)return cast.map(()=>null);
+ const count=cast.length;
+ const cap=count>=3?.38:count===2?.50:.58;
+ const face=Math.min(height*.148,...known.map(e=>{const m=PORTRAIT_METRICS[e.id];return width*cap*m[2]/m[0]}));
+ const centers=count===1?{left:.50,center:.50,right:.50}:count===2?{left:.38,center:.50,right:.62}:{left:.29,center:.50,right:.71};
+ const safeTop=Math.max(12,height*.035);
+ const commonEye=Math.max(height*.31,safeTop+Math.max(...known.map(e=>{const m=PORTRAIT_METRICS[e.id];return m[3]*face/m[2]})));
  return cast.map(e=>{
   const m=PORTRAIT_METRICS[e.id];if(!m)return null;
-  const scale=face/m[2],center=cast.length===1?.5:e.slot==='left'?.28:e.slot==='right'?.77:.52,w=m[0]*scale;
-  return {id:e.id,width:w,height:m[1]*scale,left:Math.max(4,Math.min(width-w-4,width*center-m[4]*scale)),top:eye-m[3]*scale,face};
+  const scale=face/m[2],w=m[0]*scale,h=m[1]*scale;
+  const center=centers[e.slot]??.5;
+  const top=Math.max(safeTop,commonEye-m[3]*scale);
+  const left=Math.max(6,Math.min(width-w-6,width*center-m[4]*scale));
+  return {id:e.id,width:w,height:h,left,top,face};
  });
 };

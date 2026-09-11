@@ -4,7 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#090b0f">
-  <title>태양왕이 여왕이 되었다 · v0.16</title>
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>태양왕이 여왕이 되었다 · v0.20</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -32,7 +35,7 @@
           <button id="restartBtn" class="ghost hidden">처음부터 시작</button>
         </div>
       </div>
-      <div class="version-tag">GAME / CLEAN VISUAL NOVEL UI · v0.16</div>
+      <div class="version-tag">GAME / PLAYER FLOW QA · v0.20</div>
       <button id="soundBtn" class="icon-btn sound-btn" aria-label="진동 설정">진동 ON</button>
     </section>
 
@@ -170,7 +173,7 @@
   </dialog>
 
   <dialog id="teacherDialog" class="teacher-dialog">
-    <div class="dialog-head"><div><small>TEACHER TOOLS · v0.16</small><h2>교사용 테스트</h2></div><button data-close="teacherDialog">닫기</button></div>
+    <div class="dialog-head"><div><small>TEACHER TOOLS · v0.20</small><h2>교사용 테스트</h2></div><button data-close="teacherDialog">닫기</button></div>
     <div id="teacherDebug" class="teacher-debug"></div>
     <div class="teacher-quick">
       <button data-debate-jump="tax">DEBATE 1 테스트</button>
@@ -198,5 +201,6 @@
   <link rel="stylesheet" href="css/presentation.css">
   <script src="js/portraitLayout.js"></script>
   <script src="js/app.js"></script>
+  <script src="js/playerFlowPatch.js"></script>
 </body>
 </html>

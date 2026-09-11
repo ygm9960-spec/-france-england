@@ -249,3 +249,121 @@ html,body{background:#030405!important}
   .story-screen:not(.cinematic-text-mode) .dialogue-panel[data-speaker-group="unknown"]{width:84%!important}
   .story-screen .dialogue-panel[data-speaker-group="unknown"] .dialogue-text{font-size:clamp(18px,4.2vw,28px)!important}
 }
+
+/* ===== v0.20 FLOW / TRANSITION / PORTRAIT FIX ===== */
+/* Never crop the upper edge of character art. */
+.story-screen .actor{overflow:visible!important}
+.story-screen .actor-img{
+  inset:0!important;width:100%!important;height:100%!important;
+  object-fit:contain!important;object-position:center bottom!important;
+  clip-path:none!important;
+}
+.debate-character{overflow:visible!important}
+.debate-character img{
+  clip-path:none!important;object-fit:contain!important;object-position:center bottom!important;
+}
+
+/* Dedicated prologue overlay: full sentence appears at once, then fades automatically. */
+#flowOpeningOverlay{
+  position:absolute;inset:var(--hud-h) 0 0;z-index:92;display:grid;place-items:center;
+  pointer-events:none;opacity:0;background:linear-gradient(180deg,rgba(4,5,7,.24),rgba(4,5,7,.48));
+  transition:opacity .34s ease;
+}
+#flowOpeningOverlay.show{opacity:1}
+#flowOpeningOverlay.fade{opacity:0}
+#flowOpeningOverlay .flow-opening-text{
+  width:min(860px,76%);padding:18px 28px;text-align:center;
+  color:#f2ede4;font:540 clamp(19px,2.25vw,31px)/1.58 Georgia,"Noto Serif KR",serif;
+  text-shadow:0 3px 20px #000,0 1px 2px #000;letter-spacing:.005em;
+}
+.story-screen.flow-opening-auto .dialogue-panel{opacity:0!important;pointer-events:none!important}
+.story-screen.flow-opening-auto .hud{opacity:0!important;pointer-events:none!important}
+.story-screen.flow-opening-auto .place-card{opacity:0!important}
+.story-screen.flow-opening-auto .stage{filter:brightness(.62) saturate(.74)!important}
+
+/* Action narration stays in the same geometry but stops pretending to be a speaker turn. */
+.story-screen.flow-action-narration .dialogue-panel.narration-action{padding-top:22px!important}
+.story-screen.flow-action-narration .dialogue-panel.narration-action .speaker,
+.story-screen.flow-action-narration .dialogue-panel.narration-action .line-mode{display:none!important}
+.story-screen.flow-action-narration .dialogue-panel.narration-action .dialogue-text{
+  text-align:center!important;margin:0 auto!important;max-width:76ch!important;color:#dedbd3!important;
+  font-family:Georgia,"Noto Serif KR",serif!important;font-weight:500!important;
+}
+
+/* Fronde art is fitted above the dialogue band, so its lower edge is never hidden by the HUD. */
+.flow-persistent-special{
+  position:absolute;left:0;right:0;top:0;bottom:var(--dialog-h);z-index:9;
+  display:grid;place-items:center;overflow:hidden;background:#050608;pointer-events:none;
+}
+.flow-persistent-special img{width:100%;height:100%;object-fit:contain!important;object-position:center!important;filter:none!important}
+.story-screen.flow-fronde-persistent .actor-layer,
+.story-screen.flow-fronde-persistent .place-card{opacity:0!important}
+.story-screen.flow-fronde-persistent #specialLayer{opacity:0!important;pointer-events:none!important}
+
+/* Anne document: steady reference, not a brief popup. */
+.flow-pinned-document{
+  position:absolute;right:5.5%;top:9%;z-index:12;width:min(195px,21%);height:50%;
+  display:flex;flex-direction:column;justify-content:center;align-items:center;gap:5px;
+  padding:7px;background:rgba(7,8,10,.76);border:1px solid rgba(214,173,91,.34);
+  box-shadow:0 12px 28px #0009;pointer-events:none;transform:rotate(.7deg);
+}
+.flow-pinned-document img{width:100%;height:calc(100% - 20px);object-fit:contain}
+.flow-pinned-document span{font-size:9px;color:#cdbb91;white-space:nowrap}
+.story-screen.flow-anne-doc #propLayer{opacity:0!important;pointer-events:none!important}
+
+/* Ordinary cuts are short dark wipes; structural chapter turns remain visible. */
+.scene-transition.flow-transition-soft.active{animation:flowSoftCut .58s ease both!important;background:#050608!important}
+.scene-transition.flow-transition-soft.active #sceneTransitionLabel{opacity:0!important;animation:none!important}
+.scene-transition.flow-transition-bridge.active{animation:flowBridgeCut .58s ease both!important;background:#050608!important}
+.scene-transition.flow-transition-bridge.active #sceneTransitionLabel{opacity:0!important;animation:none!important}
+.scene-transition.flow-transition-major.active{animation:sceneTransitionShell .78s ease both!important}
+@keyframes flowSoftCut{0%{opacity:0}38%,58%{opacity:.62}100%{opacity:0}}
+@keyframes flowBridgeCut{0%{opacity:0}48%{opacity:.24}100%{opacity:0}}
+
+/* Keep monologue and ??? presentation from v0.19, but guarantee center alignment after other CSS layers. */
+.story-screen:not(.cinematic-text-mode) .dialogue-panel.monologue{
+  left:50%!important;right:auto!important;top:50%!important;bottom:auto!important;transform:translate(-50%,-50%)!important;
+}
+.story-screen.flow-unknown-speaking{background:#000!important}
+.story-screen.flow-unknown-speaking .stage{background:#000!important}
+.story-screen.flow-unknown-speaking .stage:before{opacity:0!important}
+.story-screen.flow-unknown-speaking .hud,
+.story-screen.flow-unknown-speaking .place-card,
+.story-screen.flow-unknown-speaking .actor-layer,
+.story-screen.flow-unknown-speaking .prop-layer{opacity:0!important;pointer-events:none!important}
+.story-screen.flow-unknown-speaking .dialogue-panel[data-speaker-group="unknown"]{z-index:95!important}
+
+@media(max-width:650px) and (orientation:landscape){
+  #flowOpeningOverlay .flow-opening-text{width:78%;padding:10px 16px;font-size:clamp(15px,2.9vw,20px);line-height:1.52}
+  .flow-pinned-document{right:4%;top:7%;width:20%;height:48%;padding:4px}
+  .flow-pinned-document span{font-size:7px}
+}
+
+/* ===== v0.21 FULL-WEBAPP FEEDBACK INTEGRATION ===== */
+/* Narration is not a character turn. Context narration keeps a subtle label, action narration stays label-free. */
+.story-screen:not(.flow-opening-auto) .dialogue-panel.narration .speaker{display:none!important}
+.story-screen:not(.flow-opening-auto) .dialogue-panel.narration-context .line-mode{
+  display:block!important;left:18px!important;right:auto!important;top:7px!important;
+  color:#8d918f!important;letter-spacing:.18em!important;font-size:7px!important;
+}
+.story-screen:not(.flow-opening-auto) .dialogue-panel.narration-context .line-mode::after{content:"NARRATION"}
+.story-screen:not(.flow-opening-auto) .dialogue-panel.narration-context .dialogue-text{padding-top:4px!important}
+.story-screen.flow-action-narration .dialogue-panel.narration-action .line-mode{display:none!important}
+
+/* Protect heads from every CSS layer, including active-state transforms. */
+.story-screen .actor-layer{overflow:visible!important}
+.story-screen .actor{overflow:visible!important;transform-origin:center bottom!important}
+.story-screen .actor-img{clip-path:none!important;object-fit:contain!important;object-position:center bottom!important}
+.story-screen .actor.active{translate:0 0!important}
+.debate-character,.debate-character img{overflow:visible!important;clip-path:none!important}
+.debate-character img{object-fit:contain!important;object-position:center bottom!important}
+
+/* Keep two/three-person conversations visually grouped around the reading band. */
+.story-screen .actor-layer[data-cast-count="2"] .actor{max-width:42%!important}
+.story-screen .actor-layer[data-cast-count="3"] .actor{max-width:33%!important}
+
+/* On very wide phones keep the narrative stage compact and centered, with calm side gutters. */
+@media(min-aspect-ratio:19/9) and (orientation:landscape){
+  .screen{width:min(100vw,calc(100dvh * 1.72))!important}
+  .story-screen:not(.cinematic-text-mode) .dialogue-panel{left:8.5%!important;right:8.5%!important}
+}
