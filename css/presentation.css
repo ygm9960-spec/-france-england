@@ -33,3 +33,62 @@
  .story-screen:not(.cinematic-text-mode) .dialogue-text{font-size:14px;line-height:1.4;max-height:58px}
 }
 @media(prefers-reduced-motion:reduce){.actor,.stage,.dialogue-panel{transition:none!important}}
+
+/* ===== v0.17 PLAYER QA POLISH ===== */
+/* The finished poster carries the art, but the game title must be readable at a glance. */
+.title-screen.has-title-art .title-copy h1{
+  left:18%!important;right:18%!important;top:13%!important;height:auto!important;
+  margin:0!important;font-size:clamp(34px,5.35vw,76px)!important;line-height:.92!important;
+  color:#f5efe3!important;text-shadow:0 4px 22px #000,0 1px 2px #000!important;
+  letter-spacing:-.025em!important;pointer-events:auto!important;
+}
+.title-screen.has-title-art .title-copy h1 em{color:#e8c36f!important;text-shadow:0 4px 22px #000!important}
+.title-screen.has-title-art .title-copy .eyebrow{top:3.6%!important}
+.title-screen.has-title-art .premise{bottom:13%!important;background:rgba(6,8,11,.64)!important}
+
+/* Opening narration stays cinematic, but no longer happens on a dead-black screen. */
+.story-screen.cinematic-text-mode{background:#08090b!important}
+.story-screen.cinematic-text-mode .stage{
+  opacity:1!important;pointer-events:none!important;filter:brightness(.62) saturate(.72)!important;
+}
+.story-screen.cinematic-text-mode .stage:after{
+  content:"";position:absolute;inset:0;z-index:18;pointer-events:none;
+  background:linear-gradient(180deg,rgba(5,6,8,.38),rgba(5,6,8,.58)),radial-gradient(ellipse at 50% 42%,transparent 30%,rgba(3,4,6,.58) 100%);
+}
+.story-screen.cinematic-text-mode .dialogue-panel,
+.story-screen.cinematic-text-mode .dialogue-panel.narration,
+.story-screen.cinematic-text-mode .dialogue-panel.narration-action,
+.story-screen.cinematic-text-mode .dialogue-panel.narration-context{
+  background:transparent!important;z-index:26!important;
+}
+.story-screen.cinematic-text-mode .dialogue-text{
+  color:#f1ece2!important;text-shadow:0 3px 18px #000,0 1px 2px #000!important;
+}
+.story-screen.cinematic-text-mode .dialogue-panel small{color:rgba(235,231,222,.58)!important}
+
+/* Ordinary location changes become quiet cuts instead of repeated country cards. */
+.scene-transition[data-kind="france"],
+.scene-transition[data-kind="england"],
+.scene-transition[data-kind="memory"]{
+  background:rgba(5,7,10,.34)!important;backdrop-filter:none!important;
+}
+.scene-transition[data-kind="france"] #sceneTransitionLabel,
+.scene-transition[data-kind="england"] #sceneTransitionLabel,
+.scene-transition[data-kind="memory"] #sceneTransitionLabel{opacity:0!important}
+.scene-transition[data-kind="final"] #sceneTransitionLabel,
+.scene-transition[data-kind="realization"] #sceneTransitionLabel,
+.scene-transition[data-kind="epilogue"] #sceneTransitionLabel{letter-spacing:.28em!important}
+
+/* The first debate title card now reads as a phase change, not a duplicate game title. */
+.intertitle-overlay.kind-debate #intertitleTitle{letter-spacing:.08em}
+.intertitle-overlay.kind-debate #intertitleSubtitle{color:#d8c59a}
+
+@media(max-width:650px) and (orientation:landscape){
+  .title-screen.has-title-art .title-copy h1{
+    left:14%!important;right:14%!important;top:12%!important;
+    font-size:clamp(27px,6.4vw,46px)!important;line-height:.92!important;
+  }
+  .title-screen.has-title-art .title-copy .eyebrow{top:2.7%!important}
+  .title-screen.has-title-art .premise{bottom:14.5%!important;max-width:86vw!important}
+  .story-screen.cinematic-text-mode .dialogue-text{font-size:clamp(15px,2.85vw,20px)!important;line-height:1.5!important}
+}
