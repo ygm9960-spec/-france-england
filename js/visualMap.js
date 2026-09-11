@@ -69,3 +69,74 @@ window.ACTION_NARRATION_KEYS = new Set(["scene-01:0", "scene-01:11", "scene-01:1
   const versionTag=document.querySelector('.version-tag');
   if(versionTag)versionTag.textContent='GAME / PLAYER QA POLISH';
 })();
+
+/* ===== v0.18 PLAYER FLOW / TAP-CONTROLLED CONCEPT PATCH =====
+   Keeps every scene/line index in place so director/special cue mappings remain stable. */
+(()=>{
+  'use strict';
+  const scene=id=>window.STORY_DATA?.find(s=>s.id===id);
+  const line=(id,index)=>scene(id)?.lines?.[index];
+  const addActionKey=(id,index)=>window.ACTION_NARRATION_KEYS?.add?.(`${id}:${index}`);
+
+  function asConceptCard(id,index,title,subtitle){
+    const l=line(id,index);if(!l)return;
+    l.type='intertitle';l.title=title;l.subtitle=subtitle;l.effect='concept_popup';
+    delete l.text;delete l.speaker;delete l.actorId;delete l.caption;delete l.delay;
+  }
+  function asActionNarration(id,index,text){
+    const l=line(id,index);if(!l)return;
+    l.type='narration';l.text=text;l.effect='none';l.delay=null;
+    delete l.caption;delete l.title;delete l.subtitle;delete l.speaker;delete l.actorId;
+    addActionKey(id,index);
+  }
+
+  // The three opening concepts used to flash for 850ms after the text box vanished.
+  // They are now player-controlled cards: read -> tap -> return to the same stage.
+  asConceptCard('scene-01',3,'관료제','세금 징수와 국가 업무를 수행하는 관리 조직');
+  asConceptCard('scene-01',6,'상비군','평소에도 유지하며 즉시 동원할 수 있는 전문 군대');
+  asConceptCard('scene-01',9,'왕권신수설','왕의 권력은 신에게서 주어졌다는 생각');
+
+  // Paris Parlement was already explained by the narration itself; remove the duplicate transient caption.
+  const parlementIntro=line('scene-02',0);
+  if(parlementIntro){parlementIntro.effect='none';delete parlementIntro.caption;delete parlementIntro.delay;}
+
+  // One clear handoff into DEBATE I instead of a debate card followed immediately by another definition popup.
+  const s9=scene('scene-09');
+  const debateIntro=s9?.lines?.find(l=>l.type==='intertitle'&&l.effect==='debate_start');
+  if(debateIntro){
+    debateIntro.title='DEBATE I · 세금';
+    debateIntro.subtitle='영국 의회 — 왕과 함께 세금·법·국가의 일을 논의하는 정치기구';
+  }
+  const parliamentCaption=line('scene-10',0);
+  if(parliamentCaption){parliamentCaption.effect='none';parliamentCaption.delay=1;delete parliamentCaption.caption;}
+
+  // Invisible 90~520ms directions felt like the interface briefly stalled.
+  // Surface only beats that help the next line land; leave visual/special directions untouched.
+  asActionNarration('scene-03',3,'귀족과 사절의 시선이 자연스럽게 루이에게 모였다.');
+  asActionNarration('scene-09',3,'루이는 의자에서 일어나 자세를 바로잡았다. 아침의 당황한 기색은 어느새 사라져 있었다.');
+  asActionNarration('scene-12',2,'루이는 고기를 한 점 먹고 천천히 씹었다.');
+  asActionNarration('scene-16',10,'루이는 펜을 멈췄다. 잠시 설계도를 내려다보던 입가에 익숙한 미소가 번졌다.');
+  asActionNarration('scene-23',13,'루이는 군사 지도를 접고 다시 자신만만한 미소를 지었다.');
+  asActionNarration('scene-29',6,'루이는 거울 속 앤의 얼굴을 바라본 채 한동안 아무 말도 하지 못했다.');
+  asActionNarration('scene-36',17,'루이는 거울 속 앤의 얼굴을 바라보다가 잠시 말을 멈췄다.');
+
+  // The Charles I memory already lands immediately before the key line. Replaying it again after the line broke the shock beat.
+  const charlesAfter=line('scene-32',7);
+  if(charlesAfter)charlesAfter.effect='none';
+
+  // Keep the Bill of Rights reveal inside the FINAL scene rather than cutting to a full opaque document card.
+  const rightsCard=line('scene-30',5);
+  if(rightsCard){
+    rightsCard.title='1689 · 권리장전';
+    rightsCard.subtitle='왕의 권한을 제한하고 의회의 권리를 확인한 약속';
+    rightsCard.effect='concept_popup';
+  }
+
+  // A couple of micro-lines read more naturally when the player controls the beat instead of waiting on an empty panel.
+  const scene29Question=line('scene-29',5);
+  if(scene29Question?.text==='왕이 약해서 의회가 강한 건가?')scene29Question.text='왕이 약해서 의회가 강한 건가…?';
+
+  document.title='태양왕이 여왕이 되었다 · PLAYER FLOW';
+  const versionTag=document.querySelector('.version-tag');
+  if(versionTag)versionTag.textContent='GAME / PLAYER FLOW POLISH';
+})();

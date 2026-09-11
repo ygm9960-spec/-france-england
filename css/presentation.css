@@ -92,3 +92,57 @@
   .title-screen.has-title-art .premise{bottom:14.5%!important;max-width:86vw!important}
   .story-screen.cinematic-text-mode .dialogue-text{font-size:clamp(15px,2.85vw,20px)!important;line-height:1.5!important}
 }
+
+/* ===== v0.18 PLAYER FLOW ===== */
+/* Story-kind intertitles are now compact, tap-to-continue concept cards instead of another full-screen chapter card. */
+.intertitle-overlay.kind-story{
+  background:rgba(4,6,9,.34)!important;
+  backdrop-filter:blur(2px);
+  justify-content:center!important;
+  padding:0!important;
+}
+.intertitle-overlay.kind-story::before{
+  content:"";
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:min(620px,74vw);height:min(230px,58dvh);
+  border:1px solid rgba(213,177,102,.55);border-left:4px solid #d6ad5b;border-radius:8px;
+  background:linear-gradient(145deg,rgba(16,15,13,.97),rgba(10,12,15,.96));
+  box-shadow:0 22px 70px rgba(0,0,0,.58),inset 0 1px rgba(255,239,197,.05);
+}
+.intertitle-overlay.kind-story > *{position:relative;z-index:1}
+.intertitle-overlay.kind-story #intertitleKicker{
+  margin:0 0 10px!important;color:#bda56f!important;font-size:0!important;letter-spacing:.20em!important;
+}
+.intertitle-overlay.kind-story #intertitleKicker::after{content:"핵심 개념";font-size:10px}
+.intertitle-overlay.kind-story #intertitleTitle{
+  font-family:Georgia,"Noto Serif KR",serif!important;
+  font-size:clamp(24px,3.5vw,46px)!important;line-height:1.05!important;color:#f0d28a!important;
+  text-shadow:none!important;
+}
+.intertitle-overlay.kind-story #intertitleSubtitle{
+  width:min(520px,64vw);margin-top:14px!important;
+  color:#eee8da!important;font-style:normal!important;font-size:clamp(12px,1.35vw,18px)!important;line-height:1.5!important;
+}
+.intertitle-overlay.kind-story > small{
+  position:relative!important;bottom:auto!important;margin-top:18px;color:#8f969c!important;font-size:9px!important;
+}
+
+/* The opening concept sequence should feel like: narration -> card -> Louis, with no white/black flash between states. */
+.story-screen.cinematic-text-mode + .intertitle-overlay.kind-story,
+.story-screen .intertitle-overlay.kind-story{transition:none!important}
+
+/* Ordinary cuts remain visible but deliberately quiet. Structural cards (FINAL/REALIZATION/EPILOGUE) stay strong. */
+.scene-transition[data-kind="france"],
+.scene-transition[data-kind="england"],
+.scene-transition[data-kind="memory"]{background:rgba(4,6,9,.22)!important}
+
+/* During concept cards the stage remains legible behind the modal, so the player does not feel transported to another screen. */
+.story-screen:has(.intertitle-overlay.kind-story:not(.hidden)) .stage{filter:brightness(.72) saturate(.82)!important}
+.story-screen:has(.intertitle-overlay.kind-story:not(.hidden)) .place-card{opacity:.34!important}
+
+@media(max-width:650px) and (orientation:landscape){
+  .intertitle-overlay.kind-story::before{width:82vw;height:min(190px,68dvh)}
+  .intertitle-overlay.kind-story #intertitleTitle{font-size:clamp(21px,5.1vw,33px)!important}
+  .intertitle-overlay.kind-story #intertitleSubtitle{width:70vw;font-size:clamp(10px,2.2vw,14px)!important;margin-top:10px!important}
+  .intertitle-overlay.kind-story > small{margin-top:12px!important;font-size:8px!important}
+}
