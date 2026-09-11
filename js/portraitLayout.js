@@ -10,9 +10,12 @@ window.PORTRAIT_METRICS={
 window.portraitFrames=function(cast,width,height){
  const known=cast.filter(e=>PORTRAIT_METRICS[e.id]),cap=cast.length>=3?.43:.64;
  const face=Math.min(height*.155,...known.map(e=>{const m=PORTRAIT_METRICS[e.id];return width*cap*m[2]/m[0]}));
+ // Keep every cutout's lower edge behind the dialogue panel while retaining
+ // the same face scale and eye line for the whole cast.
+ const eye=Math.max(height*.22,height+12-Math.min(...known.map(e=>{const m=PORTRAIT_METRICS[e.id];return (m[1]-m[3])*face/m[2]})));
  return cast.map(e=>{
   const m=PORTRAIT_METRICS[e.id];if(!m)return null;
   const scale=face/m[2],center=cast.length===1?.5:e.slot==='left'?.28:e.slot==='right'?.77:.52,w=m[0]*scale;
-  return {id:e.id,width:w,height:m[1]*scale,left:Math.max(4,Math.min(width-w-4,width*center-m[4]*scale)),top:height*.22-m[3]*scale,face};
+  return {id:e.id,width:w,height:m[1]*scale,left:Math.max(4,Math.min(width-w-4,width*center-m[4]*scale)),top:eye-m[3]*scale,face};
  });
 };

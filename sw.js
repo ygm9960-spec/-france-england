@@ -1,4 +1,4 @@
-const CACHE='sun-king-queen-v0.15-20260911';
+const CACHE='sun-king-queen-v0.16-20260911';
 const APP_SHELL=['./css/presentation.css','./js/portraitLayout.js','./','./index.html','./css/style.css','./js/storyData.js','./js/debateData.js','./js/stageMap.js','./js/assetMap.js','./js/audioMap.js','./js/visualMap.js','./js/directorMap.js','./js/app.js'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(APP_SHELL)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('sun-king-queen-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));

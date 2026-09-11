@@ -487,6 +487,12 @@ dialog{border-color:rgba(244,239,228,.14)!important;background:#0b0e13!important
   box-shadow:0 12px 34px rgba(0,0,0,.48),inset 0 1px rgba(255,235,185,.035);overflow:visible;transition:none!important;
 }
 .dialogue-panel:before{content:"";position:absolute;left:0;top:0;width:31%;height:1px;background:linear-gradient(90deg,#d3ad61,rgba(211,173,97,0));pointer-events:none}
+
+/* v0.16: keep the painted set and portrait cutouts behind the dialogue HUD.
+   Earlier mobile rules ended the stage 23-27dvh above the viewport bottom,
+   exposing a flat digital strip and making cutouts look as if they floated. */
+.story-screen .stage{bottom:0}
+.story-screen .actor-layer{bottom:0}
 .speaker{
   position:absolute;left:17px;top:-17px;min-width:118px;max-width:45%;height:31px;margin:0;padding:6px 17px 5px;
   display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
