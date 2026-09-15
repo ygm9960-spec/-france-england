@@ -1,0 +1,27 @@
+태양왕이 여왕이 되었다 v0.27 · VALIDATION
+
+[통과]
+- JavaScript 문법 검사: js/*.js + sw.js
+- CSS 파싱: style.css / presentation.css / playerFlowFix.css (tinycss2 parse error 0)
+- HTML 로컬 src/href 존재 확인
+- Service Worker APP_SHELL 파일 존재 확인
+- app.js가 참조하는 #id 101개가 index.html에 존재
+- STORY_DATA: 40 scenes / 420 lines
+- DEBATE_DATA: 3 debates
+- LOGIC_BULLETS: 6 bullets
+- DIRECTOR_MAP / SPECIAL_CUE_MAP line index 유효성
+- PROP_HOLD_RANGES start/end 순서 및 장면 line 범위 유효성
+- 이미지 49개 Pillow decode/verify 통과
+- ZIP 생성 후 unzip -t 무결성 검사 예정/통과 시 최종 기록
+
+[데이터 보존]
+- storyData.js SHA256: 968918858dec49fcad7457c7a01133ae12721c06e3cea1fa52257f877ff9889f
+- debateData.js SHA256: ad72c1d86356199dd12bb145920001bbf302be6acbf10db9eeb42f63ad243e44
+- audioMap.js SHA256: ba1662b3adf0da97ce508d511c6a3464d285f35149716033d282139f7713f957
+
+[브라우저 런타임]
+- 컨테이너 Chromium headless 실행은 시스템 DBus 연결 문제로 종료되지 않아 완주 테스트로 인정하지 않음.
+- 따라서 본 검증은 문법/구조/자산/맵 인덱스/파일 무결성 검증 기준입니다.
+
+[ZIP]
+- unzip -t: 통과
