@@ -678,3 +678,106 @@ html,body,#app{
 .story-screen > .special-layer.interactive .special-image{
   animation:specialEventEnterV41 .55s ease both!important;
 }
+
+
+/* ===== v0.43 DREAM COLOR / PERSISTENT EVENT BACKDROP PASS ===== */
+/* Dream grammar: Louis-in-Anne remains in color; the remembered world becomes
+   monochrome so the player can instantly distinguish observer from memory. */
+.story-screen.dream-memory-mode .scene-background,
+.story-screen.dream-memory-mode #persistentSceneImage,
+.story-screen.dream-memory-mode .prop-image,
+.story-screen.dream-memory-mode .special-image{
+  filter:grayscale(1) contrast(1.03) brightness(.88)!important;
+}
+.story-screen.dream-memory-mode .actor:not([data-actor="anne_louis"]) .actor-img,
+.story-screen.dream-memory-mode .actor:not([data-actor="anne_louis"]) .actor-prev-img{
+  filter:grayscale(1) contrast(1.04) brightness(.90)!important;
+}
+.story-screen.dream-memory-mode .actor[data-actor="anne_louis"] .actor-img,
+.story-screen.dream-memory-mode .actor[data-actor="anne_louis"] .actor-prev-img{
+  filter:brightness(1.03) saturate(1.03)!important;
+}
+
+/* Keep the compact box size from v0.41, but lift speaker + dialogue toward the
+   top edge. Narration uses the same box geometry and a tiny label gutter. */
+.story-screen:not(.cinematic-text-mode):not(.unknown-voice-mode) .dialogue-panel,
+.story-screen:not(.cinematic-text-mode):not(.unknown-voice-mode) .dialogue-panel.narration,
+.story-screen:not(.cinematic-text-mode):not(.unknown-voice-mode) .dialogue-panel.narration-action,
+.story-screen:not(.cinematic-text-mode):not(.unknown-voice-mode) .dialogue-panel.narration-context,
+.story-screen:not(.cinematic-text-mode):not(.unknown-voice-mode) .dialogue-panel.narration-atmosphere,
+.story-screen:not(.cinematic-text-mode):not(.unknown-voice-mode) .dialogue-panel.narration-history{
+  padding:10px 18px 20px!important;
+}
+.story-screen:not(.cinematic-text-mode):not(.unknown-voice-mode) .dialogue-panel .speaker{
+  margin:0 0 1px!important;line-height:1.16!important;
+}
+.story-screen:not(.cinematic-text-mode):not(.unknown-voice-mode) .dialogue-panel.narration,
+.story-screen:not(.cinematic-text-mode):not(.unknown-voice-mode) .dialogue-panel.narration-action,
+.story-screen:not(.cinematic-text-mode):not(.unknown-voice-mode) .dialogue-panel.narration-context,
+.story-screen:not(.cinematic-text-mode):not(.unknown-voice-mode) .dialogue-panel.narration-atmosphere,
+.story-screen:not(.cinematic-text-mode):not(.unknown-voice-mode) .dialogue-panel.narration-history{
+  padding-top:16px!important;
+}
+.story-screen:not(.cinematic-text-mode) .dialogue-panel.narration .line-mode{
+  top:2px!important;left:18px!important;
+}
+
+/* When an event illustration is active it behaves exactly like a main scene:
+   no portrait/card/prop competes with it, and even inner voice lines return to
+   the standard bottom dialogue band. */
+.story-screen.event-backdrop-mode .actor-layer,
+.story-screen.event-backdrop-mode .prop-layer,
+.story-screen.event-backdrop-mode .pinned-scene-doc,
+.story-screen.event-backdrop-mode .special-layer,
+.story-screen.event-backdrop-mode .flashback-layer,
+.story-screen.event-backdrop-mode .place-card{
+  display:none!important;
+}
+.story-screen.event-backdrop-mode #persistentSceneLayer{
+  display:grid!important;opacity:1!important;visibility:visible!important;
+}
+.story-screen.event-backdrop-mode:not(.unknown-voice-mode) .dialogue-panel.monologue{
+  left:50%!important;right:auto!important;top:auto!important;
+  bottom:max(8px,env(safe-area-inset-bottom))!important;
+  width:var(--dialog-w)!important;height:var(--dialog-h)!important;
+  min-height:var(--dialog-h)!important;max-height:var(--dialog-h)!important;
+  transform:translateX(-50%)!important;
+  padding:10px 18px 20px!important;text-align:left!important;
+  border:1px solid rgba(110,132,151,.34)!important;border-left:3px solid #6f879d!important;
+  border-radius:7px!important;
+  background:linear-gradient(90deg,rgba(9,13,19,.94),rgba(9,13,19,.84))!important;
+  box-shadow:0 10px 34px rgba(0,0,0,.42)!important;
+}
+.story-screen.event-backdrop-mode .dialogue-panel.monologue .line-mode{display:none!important}
+.story-screen.event-backdrop-mode .dialogue-panel.monologue .speaker{
+  position:static!important;display:block!important;margin:0 0 1px!important;padding:0!important;
+  height:auto!important;max-width:none!important;background:none!important;border:0!important;
+  box-shadow:none!important;text-align:left!important;color:#9dc5e8!important;
+}
+.story-screen.event-backdrop-mode .dialogue-panel.monologue .dialogue-text{
+  width:100%!important;max-width:100%!important;max-height:58px!important;overflow:auto!important;
+  margin:0!important;text-align:left!important;font-style:italic!important;
+  font-family:Georgia,"Noto Serif KR",serif!important;color:#e6eef7!important;
+}
+
+@media(max-height:500px) and (orientation:landscape){
+  .story-screen:not(.cinematic-text-mode):not(.unknown-voice-mode) .dialogue-panel,
+  .story-screen:not(.cinematic-text-mode):not(.unknown-voice-mode) .dialogue-panel.narration,
+  .story-screen:not(.cinematic-text-mode):not(.unknown-voice-mode) .dialogue-panel.narration-action,
+  .story-screen:not(.cinematic-text-mode):not(.unknown-voice-mode) .dialogue-panel.narration-context,
+  .story-screen:not(.cinematic-text-mode):not(.unknown-voice-mode) .dialogue-panel.narration-atmosphere,
+  .story-screen:not(.cinematic-text-mode):not(.unknown-voice-mode) .dialogue-panel.narration-history{
+    padding:8px 13px 15px!important;
+  }
+  .story-screen:not(.cinematic-text-mode):not(.unknown-voice-mode) .dialogue-panel.narration,
+  .story-screen:not(.cinematic-text-mode):not(.unknown-voice-mode) .dialogue-panel.narration-action,
+  .story-screen:not(.cinematic-text-mode):not(.unknown-voice-mode) .dialogue-panel.narration-context,
+  .story-screen:not(.cinematic-text-mode):not(.unknown-voice-mode) .dialogue-panel.narration-atmosphere,
+  .story-screen:not(.cinematic-text-mode):not(.unknown-voice-mode) .dialogue-panel.narration-history{
+    padding-top:13px!important;
+  }
+  .story-screen.event-backdrop-mode:not(.unknown-voice-mode) .dialogue-panel.monologue{
+    padding:8px 13px 15px!important;
+  }
+  .story-screen.event-backdrop-mode .dialogue-panel.monologue .dialogue-text{max-height:50px!important}
+}

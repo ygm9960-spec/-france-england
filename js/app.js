@@ -2,7 +2,7 @@
   'use strict';
   const $=s=>document.querySelector(s);
   const $$=s=>Array.from(document.querySelectorAll(s));
-  const APP_VERSION='v0.42';
+  const APP_VERSION='v0.43';
   const STORAGE_KEY='sun-king-queen-v0.27'; // preserve existing classroom progress
   const LEGACY_KEYS=['sun-king-queen-v0.26','sun-king-queen-v0.25','sun-king-queen-v0.24','sun-king-queen-v0.23','sun-king-queen-v0.22','sun-king-queen-v0.21','sun-king-queen-v0.20','sun-king-queen-v0.19','sun-king-queen-v0.18','sun-king-queen-v0.17','sun-king-queen-v0.16','sun-king-queen-v0.15','sun-king-queen-v0.14','sun-king-queen-v0.13','sun-king-queen-v0.12','sun-king-queen-v0.11','sun-king-queen-v0.10','sun-king-queen-v0.9','sun-king-queen-v0.8','sun-king-queen-v0.7','sun-king-queen-v0.6','sun-king-queen-v0.5','sun-king-queen-v0.4','sun-king-queen-v0.3','sun-king-queen-v0.2'];
   const TOTAL_BULLETS=LOGIC_BULLETS.length;
@@ -104,7 +104,7 @@
     try{localStorage.removeItem(STORAGE_KEY);LEGACY_KEYS.forEach(k=>localStorage.removeItem(k))}catch{}
   }
   function reset(){
-    clearTyping();clearDirectionTimer();clearSpecialState();clearOpeningNarration();hidePersistentSceneVisual();hidePinnedSceneDoc();screens.story?.classList.remove('ending-fade','opening-black','unknown-voice-mode','eye-opening','event-backdrop-mode');els.sceneFadeOverlay?.classList.add('hidden');hideConceptToast();clearActionBeat();hideProp({immediate:true});clearDebateReadWindow();if(propReleaseTimer)clearTimeout(propReleaseTimer);propReleaseTimer=null;if(sceneEntryTimer)clearTimeout(sceneEntryTimer);if(sceneExitTimer)clearTimeout(sceneExitTimer);if(debateExitTimer)clearTimeout(debateExitTimer);sceneEntryTimer=null;sceneExitTimer=null;debateExitTimer=null;pendingSceneEntryHold=0;
+    clearTyping();clearDirectionTimer();clearSpecialState();clearOpeningNarration();hidePersistentSceneVisual();hidePinnedSceneDoc();screens.story?.classList.remove('ending-fade','opening-black','unknown-voice-mode','eye-opening','event-backdrop-mode','dream-memory-mode');els.sceneFadeOverlay?.classList.add('hidden');hideConceptToast();clearActionBeat();hideProp({immediate:true});clearDebateReadWindow();if(propReleaseTimer)clearTimeout(propReleaseTimer);propReleaseTimer=null;if(sceneEntryTimer)clearTimeout(sceneEntryTimer);if(sceneExitTimer)clearTimeout(sceneExitTimer);if(debateExitTimer)clearTimeout(debateExitTimer);sceneEntryTimer=null;sceneExitTimer=null;debateExitTimer=null;pendingSceneEntryHold=0;
     if(!teacherPreviewMode)clearPersistent();
     const keepHaptics=state?.haptics!==false;const keepAudio=clone(state?.audio||{enabled:true,volume:.58});
     AudioManager?.stopAll?.();state=baseState();state.haptics=keepHaptics;state.audio=keepAudio;busy=false;beforeBeatKey=null;afterBeatKey=null;updateTitle();
@@ -184,11 +184,18 @@
     els.conceptToast.classList.add('show');conceptToastTimer=setTimeout(()=>hideConceptToast(),qaDelay(1300));
   }
 
-  // v0.42 cinematic event-scene helpers ----------------------------------
+  // v0.43 persistent event-scene grammar -------------------------------------
+  // Event illustrations are not disposable cutaways. Once an event image arrives,
+  // it becomes the scene background while the following dialogue/narration plays.
   const EVENT_BACKDROP_RANGES={
+    'scene-02':{start:6,end:9,key:'young_louis_fronde'},
+    'scene-20':{start:4,end:11,key:'charles_door_flash'},
     'scene-28':{start:2,end:7,key:'dream_crown_offer'},
+    'scene-32':{start:5,end:9,key:'charles_door_flash'},
+    'scene-36':{start:10,end:15,key:'realization_montage'},
     'scene-40':{start:2,end:3,key:'mirror_return'}
   };
+  const EVENT_BACKDROP_KEYS=new Set(Object.values(EVENT_BACKDROP_RANGES).map(v=>v.key));
   function backdropEventFor(scene,index){
     const cfg=scene?EVENT_BACKDROP_RANGES[scene.id]:null;
     return cfg&&index>=cfg.start&&index<=cfg.end?cfg:null;
@@ -198,10 +205,10 @@
     screens.story?.classList.toggle('event-backdrop-mode',active);
     if(active){
       if(els.persistentSceneLayer?.dataset?.memoryKind!==cfg.key||els.persistentSceneLayer.classList.contains('hidden'))showPersistentSceneVisual(cfg.key);
-      hideProp({immediate:true});hidePinnedSceneDoc();hideFlashback();
-    }else if(scene?.id!=='scene-02'){
+      hideSpecial();hideProp({immediate:true});hidePinnedSceneDoc();hideFlashback();
+    }else{
       const kind=els.persistentSceneLayer?.dataset?.memoryKind;
-      if(kind==='dream_crown_offer'||kind==='mirror_return')hidePersistentSceneVisual();
+      if(kind&&EVENT_BACKDROP_KEYS.has(kind))hidePersistentSceneVisual();
     }
   }
   function transitionLabelFor(from,to){
@@ -674,7 +681,8 @@
     if(!s)return finishStory();
     clearOpeningNarration();screens.story.classList.remove('ending-fade','unknown-voice-mode','event-backdrop-mode');els.stage.style.opacity='1';els.actorLayer?.classList.remove('solo-focus');
     screens.story.dataset.chapterType=s.chapter==='FINAL'?'final':s.chapter==='REALIZATION'?'realization':s.chapter==='EPILOGUE'?'epilogue':String(s.chapter||'').includes('MEMORY')?'memory':'story';
-    if(s.id!=='scene-02')hidePersistentSceneVisual();
+    screens.story.classList.toggle('dream-memory-mode',s.tone==='dream');
+    hidePersistentSceneVisual();
     if(s.id==='scene-04')showPinnedSceneDoc('anne_accession','앤 여왕 즉위 보고서');else hidePinnedSceneDoc();
     els.chapter.textContent=s.chapter;
     els.scene.textContent=`SCENE ${String(s.number).padStart(2,'0')} · ${s.title}`;
@@ -718,7 +726,7 @@
       case 'document':{const k=propForCurrentLine('document')||'bill_of_rights',r=persistentPropFor(currentScene()?.id,state.lineIndex);showProp(k,{hold:1450,persistent:r?.key===k});}AudioManager.sfx('PAGE');break;
       case 'show_prop':if(meta.propKey){if(currentScene()?.id==='scene-04'&&meta.propKey==='anne_accession')showPinnedSceneDoc('anne_accession','앤 여왕 즉위 보고서');else{const r=persistentPropFor(currentScene()?.id,state.lineIndex);showProp(meta.propKey,{hold:meta.propHold||1500,persistent:r?.key===meta.propKey})}}break;
       case 'flashback_history':showFlashback('louis14','과거의 루이',980);break;
-      case 'charles_flash':if(!showSpecialImage('charles_door_flash',980))showFlashback('charles1','CHARLES I',900);break;
+      case 'charles_flash':{const cfg=backdropEventFor(currentScene(),state.lineIndex);if(cfg){showPersistentSceneVisual(cfg.key);screens.story.classList.add('event-backdrop-mode');hideProp({immediate:true});hidePinnedSceneDoc();}else if(!showSpecialImage('charles_door_flash',980))showFlashback('charles1','CHARLES I',900);}break;
       case 'charles_reveal':break;
       case 'throat_clear':AudioManager.sfx('THROAT');break;
       case 'summon_parliament':AudioManager.sfx('SUMMON');break;
@@ -821,16 +829,16 @@
     if(resolvedEffect==='flashback_history'){showInteractiveFlashback('louis14','과거의 루이',finishDirection);return}
     // Remove the awkward freeze after “그건 프랑스입니다.”; advance invisibly.
     if(scene?.id==='scene-34'&&resolvedEffect==='freeze'){finishDirection();return}
-    if(!special?.suppressEffect)triggerEffect(resolvedEffect,Object.assign({},line,cue||{}));
-    if(special?.key==='young_louis_fronde'){showPersistentSceneVisual('young_louis_fronde');directionTimer=setTimeout(()=>{directionTimer=null;finishDirection()},qaDelay(650));return}
-    if(scene?.id==='scene-28'&&state.lineIndex===2){
-      showPersistentSceneVisual('dream_crown_offer');screens.story.classList.add('event-backdrop-mode');hideProp({immediate:true});hidePinnedSceneDoc();
-      directionTimer=setTimeout(()=>{directionTimer=null;finishDirection()},qaDelay(950));return;
-    }
-    if(scene?.id==='scene-40'&&state.lineIndex===2){
-      showPersistentSceneVisual('mirror_return');screens.story.classList.add('event-backdrop-mode');hideProp({immediate:true});hidePinnedSceneDoc();
+    // Event images now become persistent scene backdrops. Give the illustration a
+    // short establishing beat, then continue the dialogue on top of the same image.
+    const eventBackdrop=backdropEventFor(scene,state.lineIndex);
+    if(eventBackdrop){
+      showPersistentSceneVisual(eventBackdrop.key);screens.story.classList.add('event-backdrop-mode');
+      hideSpecial();hideProp({immediate:true});hidePinnedSceneDoc();hideFlashback();
+      if(resolvedEffect==='seal')AudioManager.sfx('SEAL');
       directionTimer=setTimeout(()=>{directionTimer=null;finishDirection()},qaDelay(700));return;
     }
+    if(!special?.suppressEffect)triggerEffect(resolvedEffect,Object.assign({},line,cue||{}));
     if(special){const interactiveEnabled=!!special.interactive&&!matchMedia('(prefers-reduced-motion: reduce)').matches&&!(teacherPreviewMode&&teacherFastMode);const shown=showSpecialImage(special.key,special.hold||1200,{interactive:interactiveEnabled,minHold:special.minHold||900,onContinue:interactiveEnabled?finishDirection:null});if(shown&&interactiveEnabled)return}
     const delay=qaDelay(Math.max(50,cue?.hold||0,line.delay||90,special?.hold||0));directionTimer=setTimeout(()=>{directionTimer=null;finishDirection()},delay);
   }
