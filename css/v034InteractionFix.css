@@ -377,3 +377,304 @@ html,body,#app{
   .debate-screen .bullet strong{font-size:7.5px!important}
   .debate-screen .debate-character small{display:none!important}
 }
+
+
+/* ===== v0.41 CINEMATIC SCENE / DIALOGUE / EVENT POLISH ===== */
+:root{
+  --dialog-h:96px;
+  --dialog-w:min(82vw,1100px);
+}
+
+/* Dialogue and narration now use exactly the same compact geometry, centered
+   on the visible 16:9 artwork instead of spanning ultra-wide side gutters. */
+.story-screen:not(.cinematic-text-mode):not(.unknown-voice-mode) .dialogue-panel,
+.story-screen:not(.cinematic-text-mode):not(.unknown-voice-mode) .dialogue-panel.narration,
+.story-screen:not(.cinematic-text-mode):not(.unknown-voice-mode) .dialogue-panel.narration-action,
+.story-screen:not(.cinematic-text-mode):not(.unknown-voice-mode) .dialogue-panel.narration-context,
+.story-screen:not(.cinematic-text-mode):not(.unknown-voice-mode) .dialogue-panel.narration-atmosphere,
+.story-screen:not(.cinematic-text-mode):not(.unknown-voice-mode) .dialogue-panel.narration-history{
+  left:50%!important;right:auto!important;top:auto!important;
+  bottom:max(8px,env(safe-area-inset-bottom))!important;
+  width:var(--dialog-w)!important;height:var(--dialog-h)!important;
+  min-height:var(--dialog-h)!important;max-height:var(--dialog-h)!important;
+  transform:translateX(-50%)!important;
+  padding:23px 18px 14px!important;
+  overflow:hidden!important;
+}
+.story-screen:not(.cinematic-text-mode):not(.unknown-voice-mode) .dialogue-panel .dialogue-text{
+  font-size:clamp(13px,1.38vw,18px)!important;line-height:1.38!important;
+  max-height:56px!important;overflow:auto!important;
+}
+.story-screen:not(.cinematic-text-mode):not(.unknown-voice-mode) .dialogue-panel.long-line .dialogue-text{
+  font-size:clamp(12px,1.24vw,16px)!important;line-height:1.34!important;
+}
+.story-screen:not(.cinematic-text-mode) .dialogue-panel.narration .line-mode{top:5px!important;left:18px!important}
+.story-screen:not(.cinematic-text-mode) .dialogue-panel .speaker{font-size:clamp(10px,1.05vw,14px)!important;margin:0 0 3px!important}
+
+/* Louis' trademark order is intentionally larger than ordinary dialogue. */
+.story-screen .dialogue-panel.summon-line .dialogue-text{
+  font-size:clamp(20px,2.35vw,31px)!important;line-height:1.18!important;
+  font-weight:900!important;letter-spacing:.015em!important;color:#ffe19a!important;
+  overflow:visible!important;
+}
+
+/* Anne/Louis reaction shake uses margin offsets so old transform:none rules
+   cannot suppress it. It moves both horizontally and vertically. */
+.story-screen .actor.react-shake{animation:anneReactShakeV41 .58s cubic-bezier(.36,.07,.19,.97)!important}
+.story-screen .actor.shout-shake{animation:actorShoutBodyV41 .46s cubic-bezier(.36,.07,.19,.97)!important}
+@keyframes anneReactShakeV41{
+  0%,100%{margin-left:0;margin-top:0}
+  14%{margin-left:-6px;margin-top:1px}
+  28%{margin-left:5px;margin-top:-5px}
+  43%{margin-left:-4px;margin-top:4px}
+  58%{margin-left:4px;margin-top:-2px}
+  74%{margin-left:-2px;margin-top:2px}
+}
+@keyframes actorShoutBodyV41{
+  0%,100%{margin-left:0;margin-top:0}
+  22%{margin-left:-5px;margin-top:0}
+  45%{margin-left:5px;margin-top:-2px}
+  68%{margin-left:-3px;margin-top:1px}
+}
+
+/* Debate portraits are slightly larger, but remain clipped inside their own
+   side columns so they cannot cover the moving statement or logic targets. */
+.debate-screen .debate-arena{
+  grid-template-columns:minmax(100px,21%) minmax(0,58%) minmax(100px,21%)!important;
+}
+.debate-screen .debate-character{overflow:hidden!important}
+.debate-screen .debate-character img,
+.debate-screen.debate-hit .debate-character img,
+.debate-screen.debate-miss .debate-character img{
+  left:-6%!important;right:auto!important;bottom:-2%!important;
+  width:112%!important;height:106%!important;max-width:none!important;max-height:none!important;
+  object-fit:contain!important;object-position:center bottom!important;
+}
+
+/* Teacher-preview exit stays in the upper UI area instead of covering the
+   logic-bullet deck at the bottom. */
+.teacher-preview-badge{
+  top:max(58px,calc(env(safe-area-inset-top) + 54px))!important;
+  bottom:auto!important;right:max(10px,env(safe-area-inset-right))!important;
+}
+
+/* Full-frame event artwork uses the same 16:9 containment as scene backgrounds.
+   The dialogue panel may overlap the lower artwork, but the image itself is not cropped. */
+.stage .special-layer{
+  inset:0!important;bottom:0!important;background:#050608!important;
+  display:grid!important;place-items:center!important;
+}
+.stage .special-layer.hidden{display:none!important}
+.stage .special-image{
+  inset:0!important;width:100%!important;height:100%!important;
+  object-fit:contain!important;object-position:center!important;
+  transform:none!important;background:#050608!important;
+}
+.stage .special-layer:not(.interactive) .special-image{
+  animation:specialEventFadeV41 var(--special-duration,1.6s) ease both!important;
+}
+.stage .special-layer.interactive .special-image{animation:specialEventEnterV41 .55s ease both!important}
+@keyframes specialEventFadeV41{0%{opacity:0}18%{opacity:1}78%{opacity:1}100%{opacity:0}}
+@keyframes specialEventEnterV41{from{opacity:0}to{opacity:1}}
+
+#persistentSceneLayer{
+  position:absolute!important;left:0!important;right:0!important;
+  top:var(--hud-h)!important;bottom:0!important;
+  z-index:24!important;background:#050608!important;overflow:hidden!important;
+  display:grid!important;place-items:center!important;pointer-events:none!important;
+}
+#persistentSceneLayer.hidden{display:none!important}
+#persistentSceneImage{
+  width:100%!important;height:100%!important;object-fit:contain!important;object-position:center!important;
+  opacity:0!important;transition:opacity .62s ease!important;background:#050608!important;
+}
+#persistentSceneImage.event-visual-ready{opacity:1!important}
+
+/* Event-backdrop mode: one historical illustration becomes the entire stage.
+   No portraits, documents, place cards or temporary props may compete with it. */
+.story-screen.event-backdrop-mode .actor-layer,
+.story-screen.event-backdrop-mode .prop-layer,
+.story-screen.event-backdrop-mode .pinned-scene-doc,
+.story-screen.event-backdrop-mode .place-card,
+.story-screen.event-backdrop-mode .flashback-layer,
+.story-screen.event-backdrop-mode .special-layer{
+  opacity:0!important;visibility:hidden!important;pointer-events:none!important;
+}
+.story-screen.event-backdrop-mode #persistentSceneLayer{
+  opacity:1!important;visibility:visible!important;
+}
+.story-screen.event-backdrop-mode .stage-vignette{opacity:0!important}
+
+/* Location / time changes briefly pass through black. */
+.scene-fade-overlay{
+  position:absolute;inset:0;z-index:210;background:#030405;
+  display:flex;align-items:center;justify-content:center;pointer-events:auto;
+  opacity:0;transition:opacity .30s ease;
+}
+.scene-fade-overlay.hidden{display:none!important}
+.scene-fade-overlay.active{opacity:1}
+.scene-fade-overlay.active.fade-out{opacity:0;transition-duration:.34s}
+.scene-fade-label{
+  max-width:76vw;text-align:center;color:#ece6da;
+  font:650 clamp(18px,2.5vw,34px)/1.35 Georgia,"Noto Serif KR",serif;
+  letter-spacing:.04em;text-shadow:0 3px 18px #000;
+  opacity:0;transform:translateY(5px);transition:opacity .25s ease .12s,transform .25s ease .12s;
+}
+.scene-fade-overlay.active .scene-fade-label{opacity:1;transform:none}
+.scene-fade-overlay.active.fade-out .scene-fade-label{opacity:0;transition-delay:0s}
+
+@media(max-height:500px) and (orientation:landscape){
+  :root{--dialog-h:86px!important}
+  .story-screen:not(.cinematic-text-mode):not(.unknown-voice-mode) .dialogue-panel,
+  .story-screen:not(.cinematic-text-mode):not(.unknown-voice-mode) .dialogue-panel.narration,
+  .story-screen:not(.cinematic-text-mode):not(.unknown-voice-mode) .dialogue-panel.narration-action,
+  .story-screen:not(.cinematic-text-mode):not(.unknown-voice-mode) .dialogue-panel.narration-context,
+  .story-screen:not(.cinematic-text-mode):not(.unknown-voice-mode) .dialogue-panel.narration-atmosphere,
+  .story-screen:not(.cinematic-text-mode):not(.unknown-voice-mode) .dialogue-panel.narration-history{
+    padding:19px 13px 11px!important;
+  }
+  .story-screen:not(.cinematic-text-mode):not(.unknown-voice-mode) .dialogue-panel .dialogue-text{
+    font-size:clamp(11.5px,1.95vw,14px)!important;line-height:1.30!important;max-height:50px!important;
+  }
+  .story-screen .dialogue-panel.summon-line .dialogue-text{font-size:clamp(18px,3.2vw,25px)!important}
+  .debate-screen .debate-arena{grid-template-columns:minmax(82px,19%) minmax(0,62%) minmax(82px,19%)!important}
+  .debate-screen .debate-character img,.debate-screen.debate-hit .debate-character img,.debate-screen.debate-miss .debate-character img{
+    left:-7%!important;width:114%!important;height:108%!important;
+  }
+  .teacher-preview-badge{top:48px!important;font-size:9px!important;min-height:30px!important;padding:5px 9px!important}
+  .scene-fade-label{font-size:clamp(15px,3.2vw,23px)}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .story-screen .actor.react-shake,.story-screen .actor.shout-shake{animation:none!important}
+  #persistentSceneImage,.scene-fade-overlay,.scene-fade-label,.stage .special-image{transition:none!important;animation:none!important}
+  #persistentSceneImage.event-visual-ready{opacity:1!important}
+}
+
+/* Preserve the intentional centered inner-voice treatment; v0.41 compact sizing
+   applies to spoken dialogue and narration, not monologue cards. */
+.story-screen:not(.cinematic-text-mode):not(.unknown-voice-mode) .dialogue-panel.monologue{
+  left:50%!important;right:auto!important;top:50%!important;bottom:auto!important;
+  transform:translate(-50%,-50%)!important;width:min(760px,68%)!important;
+  height:auto!important;min-height:0!important;max-height:none!important;
+  padding:20px 26px!important;text-align:center!important;
+}
+.story-screen:not(.cinematic-text-mode):not(.unknown-voice-mode) .dialogue-panel.monologue .dialogue-text{
+  max-height:none!important;overflow:visible!important;text-align:center!important;
+}
+
+
+/* ===== v0.42 FULL EVENT-SCENE / IMPACT DIALOGUE PASS ===== */
+/* Dialogue panels are narrower now, so the text itself should use the full
+   available row rather than retaining older ch-based line-length caps. */
+.story-screen:not(.cinematic-text-mode):not(.unknown-voice-mode) .dialogue-panel .dialogue-text,
+.story-screen:not(.cinematic-text-mode):not(.unknown-voice-mode) .dialogue-panel.long-line .dialogue-text,
+.story-screen:not(.cinematic-text-mode):not(.unknown-voice-mode) .dialogue-panel.narration .dialogue-text,
+.story-screen:not(.cinematic-text-mode):not(.unknown-voice-mode) .dialogue-panel.narration-history .dialogue-text,
+.story-screen:not(.cinematic-text-mode):not(.unknown-voice-mode) .dialogue-panel.narration-atmosphere .dialogue-text{
+  width:100%!important;max-width:100%!important;
+}
+
+/* Important/exclaimed short lines hit harder without inserting an awkward
+   timed pause. */
+.story-screen .dialogue-panel.emotion-line .dialogue-text{
+  font-size:clamp(16px,1.72vw,23px)!important;
+  line-height:1.24!important;font-weight:820!important;
+  animation:dialogueImpactV42 .34s cubic-bezier(.2,.82,.3,1) both;
+}
+.story-screen .dialogue-panel.reverse-impact-line .dialogue-text{
+  font-size:clamp(20px,2.28vw,31px)!important;
+  font-weight:920!important;letter-spacing:.012em!important;color:#e8edf2!important;
+  text-shadow:0 0 18px rgba(190,210,227,.18)!important;
+  animation:reverseLineImpactV42 .42s cubic-bezier(.22,.74,.25,1) both!important;
+}
+@keyframes dialogueImpactV42{
+  0%{transform:scale(.95);opacity:.65}
+  58%{transform:scale(1.025);opacity:1}
+  100%{transform:scale(1);opacity:1}
+}
+@keyframes reverseLineImpactV42{
+  0%{transform:translateX(0) scale(.93);opacity:.55}
+  32%{transform:translateX(-4px) scale(1.035);opacity:1}
+  48%{transform:translateX(4px) scale(1.035)}
+  64%{transform:translateX(-2px) scale(1.02)}
+  100%{transform:translateX(0) scale(1)}
+}
+
+/* Event art is a real scene, not a card inside the stage. Both temporary
+   event images and persistent dream/mirror art occupy the full story viewport.
+   object-fit:contain preserves the entire 16:9 illustration. */
+.story-screen > .special-layer,
+.story-screen > .persistent-scene-layer{
+  position:absolute!important;inset:0!important;
+  width:100%!important;height:100%!important;
+  background:#050608!important;overflow:hidden!important;
+}
+.story-screen > .special-layer{z-index:70!important;display:grid!important;place-items:center!important}
+.story-screen > .special-layer.hidden{display:none!important}
+.story-screen > .special-layer .special-image{
+  position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
+  object-fit:contain!important;object-position:center!important;background:#050608!important;
+  transform:none!important;border:0!important;outline:0!important;box-shadow:none!important;
+}
+.story-screen > .special-layer .special-shade{background:linear-gradient(180deg,rgba(0,0,0,.02),rgba(0,0,0,.04) 70%,rgba(0,0,0,.18))!important}
+.story-screen > .persistent-scene-layer{z-index:30!important;display:grid!important;place-items:center!important;pointer-events:none!important}
+.story-screen > .persistent-scene-layer.hidden{display:none!important}
+.story-screen > .persistent-scene-layer img{
+  width:100%!important;height:100%!important;object-fit:contain!important;object-position:center!important;
+  background:#050608!important;border:0!important;outline:0!important;box-shadow:none!important;
+}
+/* A full event scene visually replaces the normal set. The dialogue remains
+   the only foreground UI. */
+.story-screen.event-backdrop-mode .hud,
+.story-screen.event-backdrop-mode .stage,
+.story-screen.event-backdrop-mode .place-card,
+.story-screen.event-backdrop-mode .actor-layer,
+.story-screen.event-backdrop-mode .prop-layer,
+.story-screen.event-backdrop-mode .pinned-scene-doc,
+.story-screen.event-backdrop-mode .flashback-layer,
+.story-screen.event-backdrop-mode .special-layer{
+  opacity:0!important;visibility:hidden!important;pointer-events:none!important;
+}
+.story-screen.event-backdrop-mode #persistentSceneLayer{
+  opacity:1!important;visibility:visible!important;display:grid!important;
+}
+.story-screen.event-backdrop-mode .dialogue-panel{z-index:80!important}
+
+/* Past Louis flashback: explicit student-controlled memory beat, rendered in
+   monochrome. */
+.story-screen > .flashback-layer{
+  position:absolute!important;inset:0!important;z-index:95!important;
+  width:100%!important;height:100%!important;background:rgba(2,3,5,.94)!important;
+  display:grid!important;place-items:center!important;overflow:hidden!important;
+}
+.story-screen > .flashback-layer.hidden{display:none!important}
+.story-screen > .flashback-layer.interactive{pointer-events:auto!important;cursor:pointer!important}
+.story-screen > .flashback-layer[data-actor="louis14"] .flashback-image{
+  max-width:62%!important;max-height:92%!important;object-fit:contain!important;
+  filter:grayscale(1) contrast(1.08) brightness(.92) drop-shadow(0 0 34px rgba(0,0,0,.88))!important;
+}
+.story-screen > .flashback-layer.interactive::after{
+  content:"터치하여 현재로 돌아가기 ›";position:absolute;right:4%;bottom:5%;
+  color:#d8d8d5;font-size:clamp(9px,1vw,13px);letter-spacing:.05em;
+  padding:7px 12px;border:1px solid rgba(255,255,255,.18);border-radius:999px;background:rgba(8,9,11,.58);
+}
+.story-screen > .flashback-layer small{bottom:7%!important;color:#c9c9c5!important}
+
+@media(max-height:500px) and (orientation:landscape){
+  .story-screen .dialogue-panel.emotion-line .dialogue-text{font-size:clamp(14px,2.35vw,18px)!important}
+  .story-screen .dialogue-panel.reverse-impact-line .dialogue-text{font-size:clamp(17px,3vw,24px)!important}
+  .story-screen > .flashback-layer[data-actor="louis14"] .flashback-image{max-width:58%!important;max-height:94%!important}
+}
+@media(prefers-reduced-motion:reduce){
+  .story-screen .dialogue-panel.emotion-line .dialogue-text,
+  .story-screen .dialogue-panel.reverse-impact-line .dialogue-text{animation:none!important}
+}
+
+/* Restore the v0.41 event-image fade after the overlay was moved out of .stage. */
+.story-screen > .special-layer:not(.interactive) .special-image{
+  animation:specialEventFadeV41 var(--special-duration,1.6s) ease both!important;
+}
+.story-screen > .special-layer.interactive .special-image{
+  animation:specialEventEnterV41 .55s ease both!important;
+}

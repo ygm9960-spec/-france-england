@@ -1,11 +1,11 @@
-/* v0.40 - full viewport / clean title fix */
+/* v0.42 - full viewport / clean title fix */
 (()=>{
   'use strict';
   const root=document.documentElement;
   const $=q=>document.querySelector(q);
-  document.title='태양왕이 여왕이 되었다 · v0.40';
+  document.title='태양왕이 여왕이 되었다 · v0.42';
   const versionTag=document.querySelector('.version-tag');
-  if(versionTag)versionTag.textContent='GAME / DEBATE MOTION RESTORE · v0.40';
+  if(versionTag)versionTag.textContent='GAME / FULL EVENT SCENE · v0.42';
 
   function syncViewport(){
     const vv=window.visualViewport;
@@ -15,6 +15,14 @@
     root.style.setProperty('--app-h',`${h}px`);
     root.style.setProperty('--app-w',`${w}px`);
     root.style.setProperty('--viewport-top',`${top}px`);
+    // Dialogue geometry follows the visible 16:9 artwork rather than the full
+    // ultra-wide viewport, so the panel never stretches into side gutters.
+    const hudH=h<=420?44:48;
+    const stageH=Math.max(1,h-hudH);
+    const artworkW=Math.min(w,stageH*(16/9));
+    const dialogW=Math.max(280,Math.min(w-28,1100,artworkW*.82));
+    root.style.setProperty('--story-art-w',`${Math.round(artworkW)}px`);
+    root.style.setProperty('--dialog-w',`${Math.round(dialogW)}px`);
   }
 
   function fullscreenElement(){

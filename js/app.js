@@ -2,7 +2,7 @@
   'use strict';
   const $=s=>document.querySelector(s);
   const $$=s=>Array.from(document.querySelectorAll(s));
-  const APP_VERSION='v0.40';
+  const APP_VERSION='v0.42';
   const STORAGE_KEY='sun-king-queen-v0.27'; // preserve existing classroom progress
   const LEGACY_KEYS=['sun-king-queen-v0.26','sun-king-queen-v0.25','sun-king-queen-v0.24','sun-king-queen-v0.23','sun-king-queen-v0.22','sun-king-queen-v0.21','sun-king-queen-v0.20','sun-king-queen-v0.19','sun-king-queen-v0.18','sun-king-queen-v0.17','sun-king-queen-v0.16','sun-king-queen-v0.15','sun-king-queen-v0.14','sun-king-queen-v0.13','sun-king-queen-v0.12','sun-king-queen-v0.11','sun-king-queen-v0.10','sun-king-queen-v0.9','sun-king-queen-v0.8','sun-king-queen-v0.7','sun-king-queen-v0.6','sun-king-queen-v0.5','sun-king-queen-v0.4','sun-king-queen-v0.3','sun-king-queen-v0.2'];
   const TOTAL_BULLETS=LOGIC_BULLETS.length;
@@ -26,7 +26,7 @@
     specialLayer:$('#specialLayer'),specialImage:$('#specialImage'),specialLabel:$('#specialLabel'),specialContinue:$('#specialContinue'),flashbackLayer:$('#flashbackLayer'),flashbackImage:$('#flashbackImage'),flashbackFallback:$('#flashbackFallback'),flashbackLabel:$('#flashbackLabel'),finalLockFx:$('#finalLockFx'),sunImage:$('#sunEmblemImage'),
     loadedBullet:$('#loadedBullet'),shotTrail:$('#shotTrail'),debateAnneImage:$('#debateAnneImage'),debateMpImage:$('#debateMpImage'),debateTutorial:$('#debateTutorial'),tutorialStartBtn:$('#tutorialStartBtn'),
     teacherFastToggle:$('#teacherFastToggle'),teacherTutorialPreview:$('#teacherTutorialPreview'),teacherCopyLocation:$('#teacherCopyLocation'),
-    openingOverlay:$('#openingNarrationOverlay'),openingText:$('#openingNarrationText'),persistentSceneLayer:$('#persistentSceneLayer'),persistentSceneImage:$('#persistentSceneImage'),pinnedSceneDoc:$('#pinnedSceneDoc'),pinnedSceneDocImage:$('#pinnedSceneDocImage'),pinnedSceneDocLabel:$('#pinnedSceneDocLabel'),conceptToast:$('#conceptAcquireToast'),actionBeatOverlay:$('#actionBeatOverlay'),actionBeatText:$('#actionBeatText')
+    openingOverlay:$('#openingNarrationOverlay'),openingText:$('#openingNarrationText'),persistentSceneLayer:$('#persistentSceneLayer'),persistentSceneImage:$('#persistentSceneImage'),pinnedSceneDoc:$('#pinnedSceneDoc'),pinnedSceneDocImage:$('#pinnedSceneDocImage'),pinnedSceneDocLabel:$('#pinnedSceneDocLabel'),conceptToast:$('#conceptAcquireToast'),actionBeatOverlay:$('#actionBeatOverlay'),actionBeatText:$('#actionBeatText'),sceneFadeOverlay:$('#sceneFadeOverlay'),sceneFadeLabel:$('#sceneFadeLabel')
   };
 
   const baseState=()=>({
@@ -43,7 +43,7 @@
   let beforeBeatKey=null,afterBeatKey=null;
   let teacherFastMode=false;
   let finalLockScenePlayed=null;
-  let specialTimer=null,specialReadyTimer=null,specialDone=null,specialReady=false;
+  let specialTimer=null,specialReadyTimer=null,specialDone=null,specialReady=false,flashbackDone=null;
   let openingTimerA=null,openingTimerB=null,conceptToastTimer=null,propHideTimer=null,propExitTimer=null,propReleaseTimer=null,actionBeatTimerA=null,actionBeatTimerB=null,sceneEntryTimer=null,sceneExitTimer=null,pendingSceneEntryHold=0,debateReadTimer=null,debateReadKey=null,debateReadLocked=false,debateExitTimer=null;
   let lastStoryInputAt=0;
   const assetPreloadCache=new Map();
@@ -104,7 +104,7 @@
     try{localStorage.removeItem(STORAGE_KEY);LEGACY_KEYS.forEach(k=>localStorage.removeItem(k))}catch{}
   }
   function reset(){
-    clearTyping();clearDirectionTimer();clearSpecialState();clearOpeningNarration();hidePersistentSceneVisual();hidePinnedSceneDoc();screens.story?.classList.remove('ending-fade','opening-black','unknown-voice-mode','eye-opening');hideConceptToast();clearActionBeat();hideProp({immediate:true});clearDebateReadWindow();if(propReleaseTimer)clearTimeout(propReleaseTimer);propReleaseTimer=null;if(sceneEntryTimer)clearTimeout(sceneEntryTimer);if(sceneExitTimer)clearTimeout(sceneExitTimer);if(debateExitTimer)clearTimeout(debateExitTimer);sceneEntryTimer=null;sceneExitTimer=null;debateExitTimer=null;pendingSceneEntryHold=0;
+    clearTyping();clearDirectionTimer();clearSpecialState();clearOpeningNarration();hidePersistentSceneVisual();hidePinnedSceneDoc();screens.story?.classList.remove('ending-fade','opening-black','unknown-voice-mode','eye-opening','event-backdrop-mode');els.sceneFadeOverlay?.classList.add('hidden');hideConceptToast();clearActionBeat();hideProp({immediate:true});clearDebateReadWindow();if(propReleaseTimer)clearTimeout(propReleaseTimer);propReleaseTimer=null;if(sceneEntryTimer)clearTimeout(sceneEntryTimer);if(sceneExitTimer)clearTimeout(sceneExitTimer);if(debateExitTimer)clearTimeout(debateExitTimer);sceneEntryTimer=null;sceneExitTimer=null;debateExitTimer=null;pendingSceneEntryHold=0;
     if(!teacherPreviewMode)clearPersistent();
     const keepHaptics=state?.haptics!==false;const keepAudio=clone(state?.audio||{enabled:true,volume:.58});
     AudioManager?.stopAll?.();state=baseState();state.haptics=keepHaptics;state.audio=keepAudio;busy=false;beforeBeatKey=null;afterBeatKey=null;updateTitle();
@@ -127,7 +127,7 @@
     const t=String(line?.text||'');
     if(!isKeyLine(t))return null;
     if(t.includes('그리고 영국은 왕도 처형했습니다.'))return {before:420,after:1250};
-    if(t.includes('그건 프랑스입니다.'))return {before:720,after:850};
+    if(t.includes('그건 프랑스입니다.'))return null;
     if(t.includes('짐이 곧 국가다!'))return {before:300,after:760};
     if(t.includes('짐은 태양이다!'))return {before:280,after:520};
     if(t.includes('국가는 왕 한 사람보다 큽니다.'))return {before:320,after:650};
@@ -159,11 +159,16 @@
   }
   function hidePersistentSceneVisual(){
     els.persistentSceneLayer?.classList.add('hidden');els.persistentSceneLayer?.setAttribute('aria-hidden','true');
+    els.persistentSceneImage?.classList.remove('event-visual-ready');
     if(els.persistentSceneImage)els.persistentSceneImage.removeAttribute('src');if(els.persistentSceneLayer)delete els.persistentSceneLayer.dataset.memoryKind;
   }
   function showPersistentSceneVisual(key){
     const meta=resolveSpecialMeta?.(key);if(!meta?.path||!els.persistentSceneLayer||!els.persistentSceneImage)return false;
-    els.persistentSceneImage.src=meta.path;els.persistentSceneLayer.dataset.memoryKind=key==='young_louis_fronde'?'fronde':key;els.persistentSceneLayer.classList.remove('hidden');els.persistentSceneLayer.setAttribute('aria-hidden','false');return true;
+    els.persistentSceneImage.classList.remove('event-visual-ready');
+    els.persistentSceneLayer.dataset.memoryKind=key==='young_louis_fronde'?'fronde':key;
+    els.persistentSceneLayer.classList.remove('hidden');els.persistentSceneLayer.setAttribute('aria-hidden','false');
+    setResilientImage(els.persistentSceneImage,meta.path,{onLoad:()=>requestAnimationFrame(()=>els.persistentSceneImage?.classList.add('event-visual-ready')),onError:()=>hidePersistentSceneVisual()});
+    return true;
   }
   function hidePinnedSceneDoc(){
     els.pinnedSceneDoc?.classList.add('hidden');els.pinnedSceneDoc?.setAttribute('aria-hidden','true');if(els.pinnedSceneDocImage)els.pinnedSceneDocImage.removeAttribute('src');
@@ -179,6 +184,48 @@
     els.conceptToast.classList.add('show');conceptToastTimer=setTimeout(()=>hideConceptToast(),qaDelay(1300));
   }
 
+  // v0.42 cinematic event-scene helpers ----------------------------------
+  const EVENT_BACKDROP_RANGES={
+    'scene-28':{start:2,end:7,key:'dream_crown_offer'},
+    'scene-40':{start:2,end:3,key:'mirror_return'}
+  };
+  function backdropEventFor(scene,index){
+    const cfg=scene?EVENT_BACKDROP_RANGES[scene.id]:null;
+    return cfg&&index>=cfg.start&&index<=cfg.end?cfg:null;
+  }
+  function syncBackdropEventMode(){
+    const scene=currentScene(),cfg=backdropEventFor(scene,state.lineIndex),active=!!cfg;
+    screens.story?.classList.toggle('event-backdrop-mode',active);
+    if(active){
+      if(els.persistentSceneLayer?.dataset?.memoryKind!==cfg.key||els.persistentSceneLayer.classList.contains('hidden'))showPersistentSceneVisual(cfg.key);
+      hideProp({immediate:true});hidePinnedSceneDoc();hideFlashback();
+    }else if(scene?.id!=='scene-02'){
+      const kind=els.persistentSceneLayer?.dataset?.memoryKind;
+      if(kind==='dream_crown_offer'||kind==='mirror_return')hidePersistentSceneVisual();
+    }
+  }
+  function transitionLabelFor(from,to){
+    if(!to)return '';
+    const title=String(to.title||''),place=String(to.place||'');
+    const time=(title.match(/그날\s*밤|그날\s*아침|다음\s*날|새벽|아침|오전|오후|저녁|밤/)||[])[0]||'';
+    const placeChanged=!!from&&from.place!==to.place;
+    if(time&&placeChanged)return `${place} · ${time.replace(/\s+/g,' ')}`;
+    if(time)return time.replace(/\s+/g,' ');
+    return placeChanged?place:'';
+  }
+  function runSceneFade(from,to,onBlack){
+    const overlay=els.sceneFadeOverlay,labelEl=els.sceneFadeLabel;
+    if(!overlay||teacherPreviewMode&&teacherFastMode){onBlack();return;}
+    const label=transitionLabelFor(from,to);
+    if(labelEl)labelEl.textContent=label;
+    overlay.classList.remove('hidden','fade-out');
+    overlay.setAttribute('aria-hidden','false');
+    requestAnimationFrame(()=>requestAnimationFrame(()=>overlay.classList.add('active')));
+    setTimeout(()=>{onBlack();},qaDelay(300));
+    setTimeout(()=>overlay.classList.add('fade-out'),qaDelay(470));
+    setTimeout(()=>{overlay.classList.remove('active','fade-out');overlay.classList.add('hidden');overlay.setAttribute('aria-hidden','true')},qaDelay(820));
+  }
+
   // v0.25 DETAIL PASS ----------------------------------------------------
   // Props remain on screen while the surrounding dialogue is still about them.
   // Ranges are inclusive and can continue across adjacent scenes using the same prop key.
@@ -190,13 +237,11 @@
     'scene-22':[{start:0,end:1,key:'europe_war_map'}],
     'scene-23':[{start:0,end:16,key:'europe_war_map'}],
     'scene-24':[{start:0,end:7,key:'europe_war_map'}],
-    'scene-28':[{start:2,end:7,key:'dream_red_seal'}],
     'scene-30':[{start:4,end:8,key:'bill_of_rights'}],
     'scene-31':[{start:2,end:11,key:'bill_of_rights'}],
     'scene-32':[{start:0,end:9,key:'bill_of_rights'}],
     'scene-33':[{start:0,end:7,key:'bill_of_rights'}],
     'scene-34':[{start:0,end:10,key:'bill_of_rights'}],
-    'scene-36':[{start:0,end:0,key:'crown'},{start:1,end:4,key:'tax_ledger'},{start:5,end:7,key:'europe_war_map'},{start:8,end:9,key:'palace_blueprint'}],
     'scene-37':[{start:0,end:0,key:'crown'}]
   };
   function persistentPropFor(sceneId,index){
@@ -571,19 +616,37 @@
     return true
   }
   function continueSpecial(){if(!specialReady||!specialDone)return;const done=specialDone;specialDone=null;specialReady=false;hideSpecial();haptic(6);done()}
-  function hideFlashback(){els.flashbackLayer?.classList.add('hidden');els.flashbackImage?.classList.add('hidden');if(els.flashbackImage)els.flashbackImage.removeAttribute('src')}
+  function hideFlashback(){
+    flashbackDone=null;
+    els.flashbackLayer?.classList.add('hidden');
+    els.flashbackLayer?.classList.remove('interactive');
+    els.flashbackLayer?.setAttribute('aria-hidden','true');
+    els.flashbackImage?.classList.add('hidden');
+    if(els.flashbackImage)els.flashbackImage.removeAttribute('src');
+  }
   function showOverlayImage(path,label='',fallback='',datasetActor='overlay',duration=900){
     if(!els.flashbackLayer)return;
+    hideFlashback();
     els.flashbackLabel.textContent=label||'';
     els.flashbackFallback.textContent=fallback||label||'';
     els.flashbackFallback.classList.toggle('hidden',!!path);
-    els.flashbackLayer.classList.remove('hidden');els.flashbackLayer.dataset.actor=datasetActor;
+    els.flashbackLayer.classList.remove('hidden');els.flashbackLayer.setAttribute('aria-hidden','false');els.flashbackLayer.dataset.actor=datasetActor;
     if(path){setResilientImage(els.flashbackImage,path,{onLoad:()=>{els.flashbackImage.classList.remove('hidden');els.flashbackFallback.classList.add('hidden')},onError:()=>{els.flashbackImage.classList.add('hidden');els.flashbackFallback.classList.remove('hidden')}})}
-    setTimeout(hideFlashback,qaDelay(duration));
+    if(duration>0)setTimeout(hideFlashback,qaDelay(duration));
   }
   function showFlashback(actorId,label='',duration=900){
     const def=ACTOR_DEFS?.[actorId];
     showOverlayImage(resolveActorAsset?.(actorId,'default'),label||def?.code||'',def?.name||label||actorId,actorId,duration);
+  }
+  function showInteractiveFlashback(actorId,label='',onContinue=null){
+    const def=ACTOR_DEFS?.[actorId];
+    showOverlayImage(resolveActorAsset?.(actorId,'default'),label||def?.code||'',def?.name||label||actorId,actorId,0);
+    flashbackDone=typeof onContinue==='function'?onContinue:null;
+    els.flashbackLayer?.classList.add('interactive');
+  }
+  function continueFlashback(){
+    if(!flashbackDone)return;
+    const done=flashbackDone;flashbackDone=null;hideFlashback();haptic(6);done();
   }
   function playFinalLockIntro(scene){
     if(!els.finalLockFx||scene.id!=='scene-30'||finalLockScenePlayed===scene.id)return;
@@ -609,7 +672,7 @@
   function prepareScene(){
     const s=currentScene();
     if(!s)return finishStory();
-    clearOpeningNarration();screens.story.classList.remove('ending-fade','unknown-voice-mode');els.stage.style.opacity='1';els.actorLayer?.classList.remove('solo-focus');
+    clearOpeningNarration();screens.story.classList.remove('ending-fade','unknown-voice-mode','event-backdrop-mode');els.stage.style.opacity='1';els.actorLayer?.classList.remove('solo-focus');
     screens.story.dataset.chapterType=s.chapter==='FINAL'?'final':s.chapter==='REALIZATION'?'realization':s.chapter==='EPILOGUE'?'epilogue':String(s.chapter||'').includes('MEMORY')?'memory':'story';
     if(s.id!=='scene-02')hidePersistentSceneVisual();
     if(s.id==='scene-04')showPinnedSceneDoc('anne_accession','앤 여왕 즉위 보고서');else hidePinnedSceneDoc();
@@ -703,7 +766,7 @@
     const tier=narrationTier(line),actionNarration=tier==='action',atmosphereNarration=tier==='atmosphere',historyNarration=tier==='history';
     const soloFocus=line.type==='monologue'||(currentScene()?.id==='scene-01'&&line.actorId==='louis14'&&state.lineIndex>=4&&state.lineIndex<=10);
     els.actorLayer?.classList.toggle('solo-focus',soloFocus);
-    els.panel.classList.remove('hidden','narration','monologue','narration-action','narration-context','narration-atmosphere','narration-history','key-silence');
+    els.panel.classList.remove('hidden','narration','monologue','narration-action','narration-context','narration-atmosphere','narration-history','key-silence','summon-line','emotion-line','reverse-impact-line');
     els.panel.classList.toggle('narration',line.type==='narration');
     els.panel.classList.toggle('monologue',line.type==='monologue');
     els.panel.classList.toggle('narration-action',actionNarration);
@@ -715,13 +778,19 @@
     els.speaker.textContent=line.type==='narration'?'':(line.speaker||'');
     const group=line.type==='narration'?'narration':line.type==='monologue'?'monologue':(ACTOR_DEFS?.[line.actorId]?.group||'neutral');
     syncActorPresence(currentScene());
-    els.panel.dataset.speakerGroup=group;els.panel.classList.toggle('long-line',String(line.text||'').length>=72);els.panel.classList.toggle('key-line',isKeyLine(line.text));
+    const spokenText=String(line.text||''),keyLine=isKeyLine(spokenText),emotionLine=line.type==='dialogue'&&(spokenText.length<=48&&(keyLine||/[!！]/.test(spokenText)));
+    els.panel.dataset.speakerGroup=group;els.panel.classList.toggle('long-line',spokenText.length>=72);els.panel.classList.toggle('key-line',keyLine);
+    els.panel.classList.toggle('emotion-line',emotionLine);
+    els.panel.classList.toggle('reverse-impact-line',spokenText.includes('그건 프랑스입니다.'));
+    els.panel.classList.toggle('summon-line',/의회를\s*소집하라/.test(spokenText));
     applyDirectorContext(cue,line);
     requestAnimationFrame(()=>layoutPortraits());
     const effect=cue?.effect||line.effect;if(effect)triggerEffect(effect,Object.assign({},line,cue||{}));
-    if(line.type==='dialogue'&&/[!！]/.test(String(line.text||''))&&!unknownVoice&&!matchMedia('(prefers-reduced-motion: reduce)').matches){
+    if(line.type==='dialogue'&&!unknownVoice&&!matchMedia('(prefers-reduced-motion: reduce)').matches){
       const active=els.actorLayer?.querySelector('.actor.active');
-      if(active){active.classList.remove('shout-shake');void active.offsetWidth;active.classList.add('shout-shake');setTimeout(()=>active.classList.remove('shout-shake'),qaDelay(520));}
+      const text=String(line.text||''),pose=active?.dataset?.pose||'',anneReact=line.actorId==='anne_louis'&&(effect==='summon_parliament'||['shocked','puzzled','annoyed','furious'].includes(pose)&&/[!?？！…]/.test(text));
+      if(active&&/[!！]/.test(text)){active.classList.remove('shout-shake');void active.offsetWidth;active.classList.add('shout-shake');setTimeout(()=>active.classList.remove('shout-shake'),qaDelay(520));}
+      if(active&&anneReact){active.classList.remove('react-shake');void active.offsetWidth;active.classList.add('react-shake');setTimeout(()=>active.classList.remove('react-shake'),qaDelay(620));}
     }
     record(line);typeText(line.text||'',{instant:false,speed:historyNarration ? 1.16 : (line.type==='narration' ? 1.10 : 1)});updateProgress();save();
   }
@@ -746,9 +815,22 @@
 
   function executeDirection(line){
     delete els.actorLayer.dataset.shotPhase;els.actorLayer?.classList.remove('solo-focus');const cue=currentCue(),scene=currentScene(),special=SPECIAL_CUE_MAP?.[`${scene?.id}:${state.lineIndex}`]||null;clearTyping();activateActor(cue?.focus||null);els.panel.classList.add('hidden');els.intertitle.classList.add('hidden');applyDirectorContext(cue,line);
-    if(!special?.suppressEffect)triggerEffect(cue?.effect||line.effect,Object.assign({},line,cue||{}));updateProgress();save();busy=true;clearDirectionTimer();
+    const resolvedEffect=cue?.effect||line.effect;updateProgress();save();busy=true;clearDirectionTimer();
     const finishDirection=()=>{busy=false;state.lineIndex++;beforeBeatKey=null;afterBeatKey=null;save();renderCurrent()};
-    if(special?.key==='young_louis_fronde'){showPersistentSceneVisual('young_louis_fronde');directionTimer=setTimeout(()=>{directionTimer=null;finishDirection()},qaDelay(120));return}
+    // Past Louis remains on screen until the student explicitly taps it.
+    if(resolvedEffect==='flashback_history'){showInteractiveFlashback('louis14','과거의 루이',finishDirection);return}
+    // Remove the awkward freeze after “그건 프랑스입니다.”; advance invisibly.
+    if(scene?.id==='scene-34'&&resolvedEffect==='freeze'){finishDirection();return}
+    if(!special?.suppressEffect)triggerEffect(resolvedEffect,Object.assign({},line,cue||{}));
+    if(special?.key==='young_louis_fronde'){showPersistentSceneVisual('young_louis_fronde');directionTimer=setTimeout(()=>{directionTimer=null;finishDirection()},qaDelay(650));return}
+    if(scene?.id==='scene-28'&&state.lineIndex===2){
+      showPersistentSceneVisual('dream_crown_offer');screens.story.classList.add('event-backdrop-mode');hideProp({immediate:true});hidePinnedSceneDoc();
+      directionTimer=setTimeout(()=>{directionTimer=null;finishDirection()},qaDelay(950));return;
+    }
+    if(scene?.id==='scene-40'&&state.lineIndex===2){
+      showPersistentSceneVisual('mirror_return');screens.story.classList.add('event-backdrop-mode');hideProp({immediate:true});hidePinnedSceneDoc();
+      directionTimer=setTimeout(()=>{directionTimer=null;finishDirection()},qaDelay(700));return;
+    }
     if(special){const interactiveEnabled=!!special.interactive&&!matchMedia('(prefers-reduced-motion: reduce)').matches&&!(teacherPreviewMode&&teacherFastMode);const shown=showSpecialImage(special.key,special.hold||1200,{interactive:interactiveEnabled,minHold:special.minHold||900,onContinue:interactiveEnabled?finishDirection:null});if(shown&&interactiveEnabled)return}
     const delay=qaDelay(Math.max(50,cue?.hold||0,line.delay||90,special?.hold||0));directionTimer=setTimeout(()=>{directionTimer=null;finishDirection()},delay);
   }
@@ -757,6 +839,7 @@
     syncActorPresence(currentScene());syncPersistentProp();syncFinalPressure();
     const s=currentScene();if(!s)return finishStory();
     const line=currentLine();if(!line)return nextScene();
+    syncBackdropEventMode();
     screens.story.classList.toggle('unknown-voice-mode',line.type==='dialogue'&&(line.speaker==='???'||line.actorId==='unknown'));
     if(line.type==='direction')return executeDirection(line);
     if(line.type==='debate')return startDebate(line.debateId);
@@ -791,9 +874,10 @@
       sceneExitTimer=null;
       if(!next){state.sceneIndex=nextIndex;state.lineIndex=0;save();busy=false;return finishStory()}
       const newSet=(from?.place!==next?.place)||((SCENE_ASSET_MAP?.[from?.id]||'')!==(SCENE_ASSET_MAP?.[next?.id]||''));
-      pendingSceneEntryHold=newSet?140:0;
-      const move=()=>{state.sceneIndex=nextIndex;state.lineIndex=0;beforeBeatKey=null;afterBeatKey=null;save();busy=false;prepareScene()};
-      move();
+      const timeCue=!!transitionLabelFor(from,next);
+      const move=()=>{state.sceneIndex=nextIndex;state.lineIndex=0;beforeBeatKey=null;afterBeatKey=null;save();pendingSceneEntryHold=(newSet||timeCue)?620:0;prepareScene()};
+      if(newSet||timeCue){runSceneFade(from,next,move);return}
+      busy=false;move();
     };
     const hold=sceneOutroHoldFor(from,next);
     if(hold>0){sceneExitTimer=setTimeout(proceed,qaDelay(hold));return}
@@ -1052,6 +1136,7 @@
   $('#menuHistory').addEventListener('click',()=>{els.menu.close();openHistory()});$('#menuConcept').addEventListener('click',()=>{els.menu.close();openConcepts()});$('#menuRestart').addEventListener('click',restartConfirm);
   els.sound.addEventListener('click',()=>{state.haptics=!state.haptics;save();if(state.haptics)haptic(18)});
   els.specialLayer?.addEventListener('click',continueSpecial);els.specialContinue?.addEventListener('click',e=>{e.stopPropagation();continueSpecial()});
+  els.flashbackLayer?.addEventListener('click',e=>{if(!els.flashbackLayer.classList.contains('interactive'))return;e.stopPropagation();continueFlashback()});
     els.rebuttalNext.addEventListener('click',continueRebuttal);
   $('#endHistoryBtn').addEventListener('click',openHistory);$('#endConceptBtn').addEventListener('click',openConcepts);$('#endRestartBtn').addEventListener('click',()=>{startStory(true);requestFullscreenSafe()});
   $$('[data-close]').forEach(b=>b.addEventListener('click',()=>$('#'+b.dataset.close).close()));
