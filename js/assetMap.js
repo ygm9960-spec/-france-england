@@ -56,9 +56,9 @@ window.SCENE_ASSET_MAP = {
   'scene-06':'bg_anne_bedroom','scene-07':'bg_anne_bedroom','scene-08':'bg_royal_breakfast','scene-09':'bg_english_study','scene-10':'bg_parliament',
   'scene-11':'bg_parliament','scene-12':'bg_royal_breakfast','scene-13':'bg_anne_bedroom','scene-14':'bg_dream_elizabeth_court','scene-15':'bg_anne_bedroom',
   'scene-16':'bg_english_study','scene-17':'bg_parliament','scene-18':'bg_english_study','scene-19':'bg_dream_parliament_dark','scene-20':'bg_dream_parliament_dark','scene-21':'bg_english_study','scene-22':'bg_english_study','scene-23':'bg_english_study',
-  'scene-24':'bg_parliament','scene-26':'bg_anne_bedroom','scene-27':'bg_dream_palace_departure','scene-28':'bg_dream_palace_departure',
+  'scene-24':'bg_parliament','scene-25':'bg_london_carriage','scene-26':'bg_anne_bedroom','scene-27':'bg_dream_palace_departure','scene-28':'bg_dream_palace_departure',
   'scene-29':'bg_anne_bedroom','scene-30':'bg_parliament','scene-31':'bg_parliament','scene-32':'bg_parliament','scene-33':'bg_parliament','scene-34':'bg_parliament',
-  'scene-36':'bg_anne_bedroom','scene-37':'bg_anne_bedroom','scene-38':'bg_versailles_hall','scene-39':'bg_versailles_hall','scene-40':'bg_versailles_hall'
+  'scene-35':'bg_london_carriage','scene-36':'bg_anne_bedroom','scene-37':'bg_anne_bedroom','scene-38':'bg_versailles_hall','scene-39':'bg_versailles_hall','scene-40':'bg_versailles_hall'
 };
 window.SCENE_BACKGROUND_MAP = window.SCENE_ASSET_MAP;
 

@@ -2,12 +2,12 @@
 <html lang="ko">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
   <meta name="theme-color" content="#090b0f">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title>태양왕이 여왕이 되었다 · v0.32</title>
+  <title>태양왕이 여왕이 되었다 · v0.33</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -37,6 +37,7 @@
         </div>
       </div>
       <div class="version-tag">GAME / LAYOUT & OPENING FADE · v0.32</div>
+      <button id="fullscreenBtn" class="icon-btn fullscreen-btn" aria-label="전체화면 전환">전체화면</button>
       <button id="soundBtn" class="icon-btn sound-btn" aria-label="진동 설정">진동 ON</button>
     </section>
 
@@ -47,6 +48,7 @@
         <div id="finalBulletBadge" class="final-bullet-badge hidden">논리탄환 0 / 6</div>
         <button id="historyBtn" class="icon-btn">지난 대사</button>
         <button id="conceptBtn" class="icon-btn">개념 기록</button>
+        <button id="storyFullscreenBtn" class="icon-btn fullscreen-story-btn" aria-label="전체화면 전환" title="전체화면">⛶</button>
         <button id="menuBtn" class="icon-btn">메뉴</button>
       </header>
 
@@ -172,6 +174,7 @@
     <div class="menu-body">
       <button id="menuHistory" class="menu-wide">지난 대사 보기</button>
       <button id="menuConcept" class="menu-wide">개념 기록 보기</button>
+      <button id="menuFullscreen" class="menu-wide">전체화면으로 보기</button>
       <button id="menuRestart" class="danger">처음부터 다시 시작</button>
     </div>
   </dialog>
@@ -204,7 +207,10 @@
   <script src="js/directorMap.js"></script>
   <link rel="stylesheet" href="css/presentation.css">
   <link rel="stylesheet" href="css/playerFlowFix.css">
+  <link rel="stylesheet" href="css/mobileViewportFix.css?v=035">
+  <link rel="stylesheet" href="css/v034InteractionFix.css?v=035">
   <script src="js/portraitLayout.js"></script>
   <script src="js/app.js"></script>
+  <script src="js/mobileViewportFix.js?v=035"></script>
 </body>
 </html>

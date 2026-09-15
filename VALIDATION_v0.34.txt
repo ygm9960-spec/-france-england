@@ -1,0 +1,12 @@
+v0.34 validation
+- Node syntax check: js/app.js OK
+- Node syntax check: js/mobileViewportFix.js OK
+- Background assets inspected: all 8 current story backgrounds are 1672x941 (16:9)
+- Background renderer: forced contain/center (scene crop zoom ignored)
+- Floating action narration path: disabled
+- Unknown speaker cinematic center mode: enabled
+- Scene 06 eyelid opening effect: enabled
+- Typewriter delay: slowed
+- Active-character shout shake: enabled
+- Debate bullet deck: reduced to clamp(52px, 12dvh, 76px)
+- Service worker cache: v0.34

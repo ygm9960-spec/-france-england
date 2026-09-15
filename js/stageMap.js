@@ -19,7 +19,7 @@ window.ACTOR_DEFS = {
 
 const S=(...actors)=>actors.map(([id,slot])=>({id,slot}));
 window.STAGE_MAP = {
-  'scene-01':S(['louis14','left'],['french_official','center'],['french_general','right']),
+  'scene-01':S(['french_official','left'],['louis14','center'],['french_general','right']),
   'scene-02':S(['louis14','left'],['parlement_rep','right']),
   'scene-03':S(['louis14','center']),
   'scene-04':S(['louis14','left'],['french_reporter','right']),

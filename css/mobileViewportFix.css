@@ -1,0 +1,116 @@
+/* ===== v0.33 MOBILE LANDSCAPE / FULLSCREEN FIX ===== */
+:root{
+  --app-h:100dvh;
+  --app-w:100vw;
+  --viewport-top:0px;
+}
+html,body{
+  width:100%;
+  height:var(--app-h,100dvh);
+  min-height:var(--app-h,100dvh);
+  max-height:var(--app-h,100dvh);
+  overflow:hidden!important;
+  overscroll-behavior:none;
+  background:#080b10;
+}
+body{
+  position:fixed;
+  inset:var(--viewport-top,0px) 0 auto 0;
+  touch-action:manipulation;
+}
+#app{
+  position:fixed;
+  inset:0;
+  width:100%;
+  height:var(--app-h,100dvh);
+  min-height:0;
+  overflow:hidden;
+}
+.screen{
+  position:absolute!important;
+  inset:0!important;
+  width:100%!important;
+  height:100%!important;
+  min-height:0!important;
+  max-height:none!important;
+}
+.rotate-notice{height:var(--app-h,100dvh)}
+
+/* Explicit fullscreen controls. */
+.fullscreen-btn{
+  position:absolute;
+  left:max(14px,env(safe-area-inset-left));
+  top:max(14px,env(safe-area-inset-top));
+  z-index:6;
+  background:rgba(5,7,10,.44);
+  border-color:rgba(244,239,228,.16);
+  font-size:10px;
+  color:rgba(244,239,228,.88);
+  backdrop-filter:blur(6px);
+}
+.fullscreen-story-btn{
+  min-width:38px!important;
+  padding-inline:9px!important;
+  font-size:18px!important;
+  line-height:1!important;
+}
+html:fullscreen .fullscreen-btn,
+html:fullscreen .fullscreen-story-btn,
+html:fullscreen #menuFullscreen,
+html:-webkit-full-screen .fullscreen-btn,
+html:-webkit-full-screen .fullscreen-story-btn,
+html:-webkit-full-screen #menuFullscreen{opacity:.62}
+
+/* Phone-landscape: preserve the full 16:9 artwork instead of cropping it. */
+@media (orientation:landscape) and (max-height:600px){
+  .scene-background{
+    object-fit:contain!important;
+    object-position:center!important;
+    background:#080b10;
+  }
+  .stage{
+    background:#080b10!important;
+  }
+  .stage.asset-ready{
+    background:radial-gradient(ellipse at 50% 46%,#17191d 0,#090b0f 72%,#050609 100%)!important;
+  }
+  .title-screen{
+    background:#07090d!important;
+  }
+  .title-poster-img{
+    object-fit:contain!important;
+    object-position:center!important;
+    background:#07090d;
+  }
+  .title-screen .poster-bg{
+    background:linear-gradient(180deg,rgba(5,6,8,.02),rgba(5,6,8,.08) 52%,rgba(5,6,8,.48) 82%,rgba(5,6,8,.70))!important;
+  }
+  .fullscreen-btn{
+    left:max(8px,env(safe-area-inset-left));
+    top:max(7px,env(safe-area-inset-top));
+    min-height:32px;
+    padding:5px 9px;
+    font-size:8px;
+  }
+  .sound-btn{right:max(8px,env(safe-area-inset-right))!important}
+}
+
+/* Very wide phones: avoid UI touching rounded corners / camera cutouts. */
+@media (orientation:landscape) and (max-height:500px){
+  .hud,.debate-header{
+    padding-left:max(14px,env(safe-area-inset-left))!important;
+    padding-right:max(14px,env(safe-area-inset-right))!important;
+  }
+  .story-screen:not(.cinematic-text-mode) .dialogue-panel{
+    left:max(16px,env(safe-area-inset-left))!important;
+    right:max(16px,env(safe-area-inset-right))!important;
+    bottom:max(8px,env(safe-area-inset-bottom))!important;
+  }
+}
+
+/* JS fallback for browsers that do not expose the Fullscreen API. */
+html.pseudo-fullscreen,html.pseudo-fullscreen body,html.pseudo-fullscreen #app{
+  width:100vw!important;
+  height:var(--app-h,100dvh)!important;
+  margin:0!important;
+}

@@ -64,10 +64,10 @@ window.ACTION_NARRATION_KEYS = new Set(["scene-01:0", "scene-01:11", "scene-01:1
   window.SCENE_TRANSITION_LABEL.england='\u00a0';
   window.SCENE_TRANSITION_LABEL.memory='\u00a0';
 
-  // Player-facing build label. Internal save schema deliberately stays v0.16 for compatibility.
-  document.title='태양왕이 여왕이 되었다 · PLAYER QA';
+  // Player-facing build label; save-schema versioning is handled in app.js.
+  document.title='태양왕이 여왕이 되었다 · v0.32';
   const versionTag=document.querySelector('.version-tag');
-  if(versionTag)versionTag.textContent='GAME / PLAYER QA POLISH';
+  if(versionTag)versionTag.textContent='GAME / LAYOUT & OPENING FADE · v0.32';
 })();
 
 /* ===== v0.18 PLAYER FLOW / TAP-CONTROLLED CONCEPT PATCH =====
@@ -136,7 +136,7 @@ window.ACTION_NARRATION_KEYS = new Set(["scene-01:0", "scene-01:11", "scene-01:1
   const scene29Question=line('scene-29',5);
   if(scene29Question?.text==='왕이 약해서 의회가 강한 건가?')scene29Question.text='왕이 약해서 의회가 강한 건가…?';
 
-  document.title='태양왕이 여왕이 되었다 · PLAYER FLOW';
+  document.title='태양왕이 여왕이 되었다 · v0.32';
   const versionTag=document.querySelector('.version-tag');
-  if(versionTag)versionTag.textContent='GAME / PLAYER FLOW POLISH';
+  if(versionTag)versionTag.textContent='GAME / LAYOUT & OPENING FADE · v0.32';
 })();

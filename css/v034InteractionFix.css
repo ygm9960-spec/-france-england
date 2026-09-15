@@ -1,0 +1,154 @@
+/* ===== v0.34 MOBILE PRESENTATION / DIALOGUE / DEBATE FIX ===== */
+:root{--bullet-deck-h:clamp(52px,12dvh,76px)}
+
+/* Never crop story backgrounds. All current background assets are 16:9. */
+.story-screen .scene-background{
+  object-fit:contain!important;
+  object-position:center!important;
+  background:#07090d!important;
+}
+.story-screen .stage{background:#07090d!important}
+
+/* Dialogue is always the top readable layer; character art stays behind it. */
+.story-screen .dialogue-panel{z-index:80!important}
+.story-screen .actor-layer{z-index:2!important;overflow:hidden!important}
+.story-screen .actor{z-index:2!important}
+
+/* All ordinary narration now uses the same bottom dialogue band. */
+.story-screen:not(.cinematic-text-mode) .dialogue-panel.narration,
+.story-screen:not(.cinematic-text-mode) .dialogue-panel.narration-action,
+.story-screen:not(.cinematic-text-mode) .dialogue-panel.narration-atmosphere,
+.story-screen:not(.cinematic-text-mode) .dialogue-panel.narration-history{
+  inset:auto max(16px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))!important;
+  width:auto!important;height:var(--dialog-h)!important;min-height:var(--dialog-h)!important;max-height:var(--dialog-h)!important;
+  transform:none!important;padding:28px 20px 20px!important;text-align:left!important;
+  border:1px solid #596674!important;border-left:3px solid #71859a!important;border-radius:3px!important;
+  background:linear-gradient(90deg,rgba(9,13,18,.97),rgba(12,17,23,.94))!important;
+  box-shadow:0 6px 22px #0008!important;
+}
+.story-screen:not(.cinematic-text-mode) .dialogue-panel.narration .speaker{display:none!important}
+.story-screen:not(.cinematic-text-mode) .dialogue-panel.narration .line-mode{
+  display:block!important;left:20px!important;right:auto!important;top:7px!important;color:#90a6bb!important;
+}
+.story-screen:not(.cinematic-text-mode) .dialogue-panel.narration .dialogue-text{
+  margin:0!important;max-width:92ch!important;text-align:left!important;color:#cbd8e4!important;
+  font-family:Georgia,"Noto Serif KR",serif!important;font-style:normal!important;font-weight:520!important;
+}
+.action-beat-overlay{display:none!important}
+
+/* Dialogue and narration are visually distinct; key concepts receive restrained emphasis. */
+.story-screen .dialogue-panel:not(.narration) .dialogue-text{color:#f4ead8!important}
+.story-emphasis{font-weight:850;color:#f0c96f;text-shadow:0 0 12px rgba(240,201,111,.12)}
+.dialogue-panel.narration .story-emphasis{color:#9fc7e5;text-shadow:0 0 12px rgba(130,184,224,.14)}
+.dialogue-panel.key-line .story-emphasis{color:#ffe19a}
+
+/* ??? voice: pure black field, centered line, no drifting portrait/HUD. */
+.story-screen.unknown-voice-mode{background:#000!important}
+.story-screen.unknown-voice-mode .hud,
+.story-screen.unknown-voice-mode .stage,
+.story-screen.unknown-voice-mode .place-card,
+.story-screen.unknown-voice-mode .actor-layer,
+.story-screen.unknown-voice-mode .prop-layer,
+.story-screen.unknown-voice-mode .pinned-scene-doc{opacity:0!important;visibility:hidden!important;pointer-events:none!important}
+.story-screen.unknown-voice-mode .dialogue-panel[data-speaker-group="unknown"]{
+  left:50%!important;right:auto!important;top:50%!important;bottom:auto!important;
+  width:min(820px,82vw)!important;height:auto!important;min-height:0!important;max-height:none!important;
+  transform:translate(-50%,-50%)!important;padding:18px 22px!important;
+  border:0!important;background:transparent!important;box-shadow:none!important;text-align:center!important;z-index:150!important;
+}
+.story-screen.unknown-voice-mode .dialogue-panel[data-speaker-group="unknown"] .line-mode{display:none!important}
+.story-screen.unknown-voice-mode .dialogue-panel[data-speaker-group="unknown"] .speaker{
+  position:static!important;display:block!important;margin:0 0 10px!important;max-width:none!important;height:auto!important;
+  text-align:center!important;color:#8c8b96!important;font-size:clamp(11px,1.1vw,15px)!important;letter-spacing:.24em!important;
+}
+.story-screen.unknown-voice-mode .dialogue-panel[data-speaker-group="unknown"] .dialogue-text{
+  display:block!important;max-height:none!important;overflow:visible!important;text-align:center!important;
+  color:#f1eee7!important;font:560 clamp(18px,2.25vw,31px)/1.6 Georgia,"Noto Serif KR",serif!important;text-shadow:none!important;
+}
+.story-screen.unknown-voice-mode .dialogue-panel[data-speaker-group="unknown"] #nextHint{
+  position:static!important;display:block!important;margin-top:18px!important;color:#666772!important;font-size:9px!important;
+}
+
+/* A shouted/exclaimed line gives only the speaking portrait a short shake. */
+.story-screen .actor.shout-shake .actor-img{animation:actorShoutShakeV34 .48s cubic-bezier(.36,.07,.19,.97)!important}
+@keyframes actorShoutShakeV34{
+  0%,100%{transform:translate3d(0,0,0)}
+  18%{transform:translate3d(-5px,0,0) rotate(-.35deg)}
+  36%{transform:translate3d(5px,0,0) rotate(.35deg)}
+  54%{transform:translate3d(-3px,0,0) rotate(-.2deg)}
+  72%{transform:translate3d(3px,0,0) rotate(.2deg)}
+}
+
+/* Louis wakes in Anne's body: black eyelids open from the center. */
+.story-screen.eye-opening::before,.story-screen.eye-opening::after{
+  content:"";position:absolute;left:0;right:0;height:50%;background:#000;z-index:220;pointer-events:none;
+  animation-duration:1.65s;animation-timing-function:cubic-bezier(.52,.02,.25,1);animation-fill-mode:forwards;
+}
+.story-screen.eye-opening::before{top:0;transform-origin:top center;animation-name:eyeOpenTopV34}
+.story-screen.eye-opening::after{bottom:0;transform-origin:bottom center;animation-name:eyeOpenBottomV34}
+@keyframes eyeOpenTopV34{0%,16%{transform:scaleY(1)}100%{transform:scaleY(0)}}
+@keyframes eyeOpenBottomV34{0%,16%{transform:scaleY(1)}100%{transform:scaleY(0)}}
+
+/* Debate: the logic-bullet tray is less than half its old height, leaving room for the statement. */
+.debate-screen .bullet-deck{
+  height:var(--bullet-deck-h)!important;
+  padding:5px max(8px,1.4%)!important;
+  gap:5px!important;
+  align-items:stretch!important;
+}
+.debate-screen .debate-arena{bottom:var(--bullet-deck-h)!important}
+.debate-screen .bullet{
+  min-height:0!important;padding:3px 4px!important;border-radius:5px!important;overflow:visible!important;
+}
+.debate-screen .bullet strong{
+  height:100%!important;min-height:0!important;font-size:clamp(8.5px,.92vw,12px)!important;line-height:1.12!important;
+  white-space:normal!important;overflow:visible!important;text-wrap:balance!important;
+}
+.debate-screen .bullet small{font-size:8px!important;line-height:1.12!important}
+.debate-screen .statement-zone{overflow:visible!important;padding:2.5% 1%!important}
+.debate-screen .statement-rail{width:min(94%,920px)!important;overflow:visible!important}
+.debate-screen .statement-zone #statementText{
+  font-size:clamp(16px,2.15vw,30px)!important;line-height:1.42!important;overflow:visible!important;text-wrap:balance!important;
+}
+.debate-screen #debatePrompt{margin-top:1.4vh!important}
+.debate-screen .loaded-bullet{bottom:3%!important;padding:5px 11px!important;font-size:10px!important}
+
+@media(max-height:500px) and (orientation:landscape){
+  :root{--bullet-deck-h:52px!important;--dialog-h:102px!important}
+  .story-screen:not(.cinematic-text-mode) .dialogue-panel.narration,
+  .story-screen:not(.cinematic-text-mode) .dialogue-panel.narration-action,
+  .story-screen:not(.cinematic-text-mode) .dialogue-panel.narration-atmosphere,
+  .story-screen:not(.cinematic-text-mode) .dialogue-panel.narration-history{padding:23px 14px 14px!important}
+  .story-screen:not(.cinematic-text-mode) .dialogue-panel.narration .dialogue-text{font-size:12.5px!important;line-height:1.38!important;max-height:61px!important;overflow:auto!important}
+  .story-screen.unknown-voice-mode .dialogue-panel[data-speaker-group="unknown"] .dialogue-text{font-size:clamp(15px,2.7vw,20px)!important}
+  .debate-screen .statement-zone #statementText{font-size:clamp(13px,2.45vw,19px)!important;line-height:1.34!important}
+  .debate-screen .bullet strong{font-size:8px!important}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .story-screen .actor.shout-shake .actor-img,.story-screen.eye-opening::before,.story-screen.eye-opening::after{animation:none!important}
+  .story-screen.eye-opening::before,.story-screen.eye-opening::after{display:none!important}
+}
+
+.story-screen:not(.cinematic-text-mode) .dialogue-panel.narration .line-mode::after{content:none!important}
+
+/* ===== v0.35 PORTRAIT LOWER-EDGE FIX =====
+   Character composition now uses the full stage height. The dialogue panel overlays
+   the lower body instead of forcing portraits to end at the panel's upper edge.
+   This prevents a visible empty strip beneath character art on short landscape screens. */
+.story-screen:not(.unknown-voice-mode) .actor-layer{
+  inset:0!important;
+  bottom:0!important;
+  overflow:hidden!important;
+}
+/* Keep the portrait itself bottom-anchored so its lower portion can continue naturally
+   behind the dialogue band. Only the physical screen edge may crop it. */
+.story-screen:not(.unknown-voice-mode) .actor,
+.story-screen:not(.unknown-voice-mode) .actor-img,
+.story-screen:not(.unknown-voice-mode) .actor-prev-img{
+  transform-origin:center bottom!important;
+}
+.story-screen:not(.unknown-voice-mode) .actor-img,
+.story-screen:not(.unknown-voice-mode) .actor-prev-img{
+  object-position:center bottom!important;
+}

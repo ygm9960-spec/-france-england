@@ -1,0 +1,6 @@
+v0.35 validation
+- JS syntax: PASS (app.js, mobileViewportFix.js, portraitLayout.js)
+- portrait layer: full-stage inset:0, bottom:0 override loaded last
+- dialogue remains above portrait layer (dialogue z-index 80, actor layer z-index 2)
+- unknown voice mode remains isolated/hidden as in v0.34
+- v0.34 presentation/dialogue/debate changes retained
