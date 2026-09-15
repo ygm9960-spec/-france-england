@@ -269,3 +269,111 @@ html,body,#app{
     object-position:center center!important;
   }
 }
+
+
+/* ===== v0.39 DEBATE USABILITY / PORTRAIT LIFT ===== */
+:root{
+  --debate-header-h:clamp(44px,9dvh,62px);
+  --bullet-deck-h:clamp(58px,13dvh,82px);
+}
+/* Story portraits keep their calculated size but sit a little higher. */
+.story-screen:not(.unknown-voice-mode) .actor-layer{overflow:hidden!important}
+
+/* The debate screen must never inherit an old zoomed portrait composition. */
+.debate-screen{
+  overflow:hidden!important;
+  transform:none!important;
+  translate:none!important;
+  touch-action:manipulation!important;
+}
+.debate-screen .debate-header{
+  position:absolute!important;left:0!important;right:0!important;top:0!important;
+  height:var(--debate-header-h)!important;min-height:0!important;
+  padding:0 max(10px,2.2%)!important;gap:10px!important;
+  z-index:30!important;overflow:hidden!important;
+}
+.debate-screen .debate-header strong{
+  font-size:clamp(14px,2vw,24px)!important;
+  white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;
+}
+.debate-screen .debate-header span{font-size:clamp(7px,.85vw,11px)!important;white-space:nowrap!important}
+.debate-screen .debate-arena{
+  position:absolute!important;left:0!important;right:0!important;
+  top:var(--debate-header-h)!important;bottom:var(--bullet-deck-h)!important;
+  display:grid!important;grid-template-columns:minmax(90px,18%) minmax(0,64%) minmax(90px,18%)!important;
+  align-items:stretch!important;overflow:hidden!important;
+  transform:none!important;zoom:1!important;
+}
+.debate-screen .debate-character{
+  width:100%!important;height:100%!important;min-width:0!important;max-width:100%!important;
+  overflow:hidden!important;align-self:stretch!important;justify-self:stretch!important;
+  pointer-events:none!important;z-index:1!important;
+}
+.debate-screen .debate-character img,
+.debate-screen.debate-hit .debate-character img,
+.debate-screen.debate-miss .debate-character img{
+  position:absolute!important;inset:auto 0 0 0!important;
+  width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;
+  object-fit:contain!important;object-position:center bottom!important;
+  transform:none!important;translate:none!important;scale:1!important;
+}
+.debate-screen .statement-zone{
+  position:relative!important;z-index:8!important;
+  width:100%!important;min-width:0!important;height:100%!important;
+  padding:10px 12px!important;overflow:hidden!important;
+  display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;
+  pointer-events:auto!important;
+}
+.debate-screen .statement-rail{
+  width:min(100%,820px)!important;max-width:100%!important;
+  animation-name:statementDrift!important;
+  animation-timing-function:ease-in-out!important;
+  animation-iteration-count:infinite!important;
+  animation-direction:alternate!important;
+  will-change:transform!important;
+  overflow:visible!important;
+}
+.debate-screen .statement-zone #statementText{
+  margin:0 auto!important;max-width:100%!important;
+  font-size:clamp(14px,1.75vw,23px)!important;line-height:1.38!important;
+  text-align:center!important;overflow:visible!important;text-wrap:pretty!important;
+}
+.debate-screen .claim-target{
+  display:inline!important;position:relative!important;z-index:12!important;
+  padding:1px 3px!important;min-height:0!important;
+  pointer-events:auto!important;touch-action:manipulation!important;
+}
+.debate-screen #debatePrompt{
+  flex:0 0 auto!important;margin:8px 0 0!important;min-height:1.25em!important;
+  font-size:clamp(9px,1vw,13px)!important;line-height:1.25!important;
+}
+.debate-screen .bullet-deck{
+  position:absolute!important;left:0!important;right:0!important;bottom:0!important;
+  height:var(--bullet-deck-h)!important;min-height:0!important;
+  z-index:40!important;display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;
+  gap:5px!important;padding:5px max(7px,1.2%)!important;
+  overflow:hidden!important;pointer-events:auto!important;
+}
+.debate-screen .bullet{
+  width:100%!important;height:100%!important;min-width:0!important;min-height:0!important;
+  padding:3px!important;overflow:hidden!important;pointer-events:auto!important;touch-action:manipulation!important;
+}
+.debate-screen .bullet strong{
+  width:100%!important;height:100%!important;min-height:0!important;
+  font-size:clamp(8px,.82vw,11px)!important;line-height:1.12!important;
+  white-space:normal!important;overflow:hidden!important;text-wrap:balance!important;
+}
+.debate-screen .loaded-bullet{z-index:20!important;bottom:4px!important;font-size:9px!important;padding:4px 9px!important}
+/* The five-tap teacher target should feel like ordinary HUD text, not a visible admin button. */
+#sceneLabel,#debateTopic{user-select:none;-webkit-user-select:none;cursor:pointer}
+
+@media (orientation:landscape) and (max-height:500px){
+  :root{--debate-header-h:42px;--bullet-deck-h:58px}
+  .debate-screen .debate-arena{grid-template-columns:minmax(72px,15%) minmax(0,70%) minmax(72px,15%)!important}
+  .debate-screen .statement-zone{padding:5px 8px!important}
+  .debate-screen .statement-zone #statementText{font-size:clamp(12px,2vw,17px)!important;line-height:1.28!important}
+  .debate-screen #debatePrompt{margin-top:5px!important;font-size:8px!important}
+  .debate-screen .bullet-deck{gap:4px!important;padding:4px 6px!important}
+  .debate-screen .bullet strong{font-size:7.5px!important}
+  .debate-screen .debate-character small{display:none!important}
+}

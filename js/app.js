@@ -2,7 +2,7 @@
   'use strict';
   const $=s=>document.querySelector(s);
   const $$=s=>Array.from(document.querySelectorAll(s));
-  const APP_VERSION='v0.38';
+  const APP_VERSION='v0.40';
   const STORAGE_KEY='sun-king-queen-v0.27'; // preserve existing classroom progress
   const LEGACY_KEYS=['sun-king-queen-v0.26','sun-king-queen-v0.25','sun-king-queen-v0.24','sun-king-queen-v0.23','sun-king-queen-v0.22','sun-king-queen-v0.21','sun-king-queen-v0.20','sun-king-queen-v0.19','sun-king-queen-v0.18','sun-king-queen-v0.17','sun-king-queen-v0.16','sun-king-queen-v0.15','sun-king-queen-v0.14','sun-king-queen-v0.13','sun-king-queen-v0.12','sun-king-queen-v0.11','sun-king-queen-v0.10','sun-king-queen-v0.9','sun-king-queen-v0.8','sun-king-queen-v0.7','sun-king-queen-v0.6','sun-king-queen-v0.5','sun-king-queen-v0.4','sun-king-queen-v0.3','sun-king-queen-v0.2'];
   const TOTAL_BULLETS=LOGIC_BULLETS.length;
@@ -427,7 +427,10 @@
     const cast=stageActorsFor(scene);els.actorLayer.dataset.castCount=String(cast.length);
     cast.forEach(entry=>{
       const def=ACTOR_DEFS[entry.id];if(!def)return;
-      const div=document.createElement('div');const first=firstActorLine(scene,entry.id);
+      // SCENE 10 opens on a location caption. Keep both debate participants already
+      // visible behind that caption instead of treating the caption as a pre-entry beat.
+      const first=scene.id==='scene-10'?0:firstActorLine(scene,entry.id);
+      const div=document.createElement('div');
       div.className='actor entering';div.dataset.actor=entry.id;div.dataset.slot=entry.slot;div.dataset.group=def.group||'';div.dataset.firstLine=String(first);
       div.dataset.frame=['anne_louis','louis14'].includes(entry.id)?'wide':'portrait';
       if(SILHOUETTE_ACTORS.has(entry.id))div.classList.add('silhouette');
@@ -1054,10 +1057,18 @@
   $$('[data-close]').forEach(b=>b.addEventListener('click',()=>$('#'+b.dataset.close).close()));
   $$('[data-debate-jump]').forEach(b=>b.addEventListener('click',()=>jumpToDebate(b.dataset.debateJump)));
 
-  $('#teacherTapTarget').addEventListener('click',()=>{
+  function teacherSecretTap(ev){
+    ev?.stopPropagation?.();
     tapCount++;clearTimeout(tapTimer);tapTimer=setTimeout(()=>tapCount=0,1700);
-    if(tapCount>=5){tapCount=0;buildTeacher();els.teacher.showModal();haptic([10,20,10])}
-  });
+    if(tapCount>=5){
+      tapCount=0;clearTimeout(tapTimer);
+      buildTeacher();
+      if(!els.teacher.open)els.teacher.showModal();
+      haptic([10,20,10]);
+    }
+  }
+  // Same five-tap teacher shortcut on the title screen, story header and debate header.
+  ['teacherTapTarget','sceneLabel','debateTopic'].forEach(id=>document.getElementById(id)?.addEventListener('click',teacherSecretTap));
   $('#teacherReset').addEventListener('click',()=>{
     if(confirm('학생용 저장 상태를 완전히 초기화할까요?')){
       teacherPreviewMode=false;teacherSnapshot=null;teacherFastMode=false;document.body.classList.remove('qa-fast');reset();els.teacher.close();updateTeacherPreviewBadge();show('title');

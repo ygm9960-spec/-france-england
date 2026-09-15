@@ -1,4 +1,4 @@
-// v0.32 head-safe automatic portrait layout · stable spacing + silhouette geometry.
+// v0.40 head-safe automatic portrait layout · stable spacing + silhouette geometry.
 // Approximate source-pixel face height / eye position. Scene-specific manual coordinates are intentionally not used.
 window.PORTRAIT_METRICS={
  louis14:[1152,768,120,106,603],anne_louis:[1152,768,130,145,591],
@@ -18,11 +18,14 @@ window.portraitFrames=function(cast,width,height){
  const centers=count===1?{left:.50,center:.50,right:.50}:count===2?{left:.34,center:.50,right:.66}:{left:.25,center:.50,right:.75};
  const safeTop=Math.max(12,height*.035);
  const commonEye=Math.max(height*.31,safeTop+Math.max(...known.map(e=>{const m=PORTRAIT_METRICS[e.id];return m[3]*face/m[2]})));
+ // Lift the whole cast slightly so the dialogue band covers less of the torso.
+ // Keep scale and horizontal composition unchanged.
+ const portraitLift=Math.min(24,height*.045);
  return cast.map(e=>{
   const m=PORTRAIT_METRICS[e.id];if(!m)return null;
   const scale=face/m[2],w=m[0]*scale,h=m[1]*scale;
   const center=centers[e.slot]??.5;
-  const top=Math.max(safeTop,commonEye-m[3]*scale);
+  const top=Math.max(safeTop,commonEye-m[3]*scale-portraitLift);
   const left=Math.max(6,Math.min(width-w-6,width*center-m[4]*scale));
   return {id:e.id,width:w,height:h,left,top,face};
  });

@@ -1,11 +1,11 @@
-/* v0.38 - full viewport / clean title fix */
+/* v0.40 - full viewport / clean title fix */
 (()=>{
   'use strict';
   const root=document.documentElement;
   const $=q=>document.querySelector(q);
-  document.title='태양왕이 여왕이 되었다 · v0.38';
+  document.title='태양왕이 여왕이 되었다 · v0.40';
   const versionTag=document.querySelector('.version-tag');
-  if(versionTag)versionTag.textContent='GAME / CHARACTER DEHALO FIX · v0.38';
+  if(versionTag)versionTag.textContent='GAME / DEBATE MOTION RESTORE · v0.40';
 
   function syncViewport(){
     const vv=window.visualViewport;
