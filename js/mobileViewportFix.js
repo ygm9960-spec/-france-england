@@ -1,11 +1,11 @@
-/* v0.35 - portrait lower-edge fix */
+/* v0.36 - portrait lower-edge fix */
 (()=>{
   'use strict';
   const root=document.documentElement;
   const $=q=>document.querySelector(q);
-  document.title='태양왕이 여왕이 되었다 · v0.35';
+  document.title='태양왕이 여왕이 되었다 · v0.36';
   const versionTag=document.querySelector('.version-tag');
-  if(versionTag)versionTag.textContent='GAME / PORTRAIT POSITION FIX · v0.35';
+  if(versionTag)versionTag.textContent='GAME / TITLE CENTER / EDGE CLEANUP · v0.36';
 
   function syncViewport(){
     const vv=window.visualViewport;
