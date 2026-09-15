@@ -781,3 +781,63 @@ html,body,#app{
   }
   .story-screen.event-backdrop-mode .dialogue-panel.monologue .dialogue-text{max-height:50px!important}
 }
+
+
+/* ===== v0.44 EMPHASIS / TRANSITION / DEBATE DEPTH PASS ===== */
+/* Constitutional principle gets the same cinematic weight as other core lines. */
+.story-screen .dialogue-panel.constitutional-line .dialogue-text{
+  font-size:clamp(21px,2.42vw,32px)!important;
+  line-height:1.22!important;font-weight:920!important;letter-spacing:.012em!important;
+  color:#dbe8f1!important;text-shadow:0 0 18px rgba(158,194,220,.20)!important;
+  animation:constitutionalImpactV44 .52s cubic-bezier(.2,.78,.25,1) both!important;
+}
+.story-screen .dialogue-panel.constitutional-line .story-emphasis{
+  color:#b8d8ec!important;font-weight:950!important;
+}
+@keyframes constitutionalImpactV44{
+  0%{transform:scale(.94);opacity:.55}
+  44%{transform:scale(1.03);opacity:1}
+  58%{transform:translateX(-2px) scale(1.02)}
+  70%{transform:translateX(2px) scale(1.01)}
+  100%{transform:none;opacity:1}
+}
+
+/* Let location/time changes breathe: full black first, then a slower reveal. */
+.scene-fade-overlay{transition:opacity .58s ease!important}
+.scene-fade-overlay.active.fade-out{transition-duration:.62s!important}
+.scene-fade-label{transition:opacity .38s ease .18s,transform .38s ease .18s!important}
+
+/* Waking as Anne: eyelids open much more slowly from the center. */
+.story-screen.eye-opening::before,.story-screen.eye-opening::after{
+  animation-duration:2.95s!important;
+  animation-timing-function:cubic-bezier(.48,.02,.20,1)!important;
+}
+@keyframes eyeOpenTopV44{0%,24%{transform:scaleY(1)}100%{transform:scaleY(0)}}
+@keyframes eyeOpenBottomV44{0%,24%{transform:scaleY(1)}100%{transform:scaleY(0)}}
+.story-screen.eye-opening::before{animation-name:eyeOpenTopV44!important}
+.story-screen.eye-opening::after{animation-name:eyeOpenBottomV44!important}
+
+/* Debate portraits are atmospheric support, not the primary interaction layer. */
+.debate-screen .debate-character{
+  z-index:1!important;opacity:.46!important;
+  filter:saturate(.72) brightness(.82)!important;
+}
+.debate-screen .debate-character img,
+.debate-screen.debate-hit .debate-character img,
+.debate-screen.debate-miss .debate-character img{
+  opacity:1!important;
+  filter:drop-shadow(0 14px 28px rgba(0,0,0,.42))!important;
+}
+.debate-screen .statement-zone{z-index:12!important}
+.debate-screen .statement-zone:before{z-index:-1!important}
+.debate-screen .loaded-bullet,.debate-screen .aim-pulse,.debate-screen .shot-trail{z-index:14!important}
+.debate-screen .impact-text{z-index:20!important}
+.debate-screen .bullet-deck{z-index:30!important}
+
+@media(max-height:500px) and (orientation:landscape){
+  .story-screen .dialogue-panel.constitutional-line .dialogue-text{font-size:clamp(17px,3.2vw,25px)!important}
+  .debate-screen .debate-character{opacity:.40!important}
+}
+@media(prefers-reduced-motion:reduce){
+  .story-screen .dialogue-panel.constitutional-line .dialogue-text{animation:none!important}
+}

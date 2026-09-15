@@ -2,7 +2,7 @@
   'use strict';
   const $=s=>document.querySelector(s);
   const $$=s=>Array.from(document.querySelectorAll(s));
-  const APP_VERSION='v0.43';
+  const APP_VERSION='v0.44';
   const STORAGE_KEY='sun-king-queen-v0.27'; // preserve existing classroom progress
   const LEGACY_KEYS=['sun-king-queen-v0.26','sun-king-queen-v0.25','sun-king-queen-v0.24','sun-king-queen-v0.23','sun-king-queen-v0.22','sun-king-queen-v0.21','sun-king-queen-v0.20','sun-king-queen-v0.19','sun-king-queen-v0.18','sun-king-queen-v0.17','sun-king-queen-v0.16','sun-king-queen-v0.15','sun-king-queen-v0.14','sun-king-queen-v0.13','sun-king-queen-v0.12','sun-king-queen-v0.11','sun-king-queen-v0.10','sun-king-queen-v0.9','sun-king-queen-v0.8','sun-king-queen-v0.7','sun-king-queen-v0.6','sun-king-queen-v0.5','sun-king-queen-v0.4','sun-king-queen-v0.3','sun-king-queen-v0.2'];
   const TOTAL_BULLETS=LOGIC_BULLETS.length;
@@ -228,9 +228,9 @@
     overlay.classList.remove('hidden','fade-out');
     overlay.setAttribute('aria-hidden','false');
     requestAnimationFrame(()=>requestAnimationFrame(()=>overlay.classList.add('active')));
-    setTimeout(()=>{onBlack();},qaDelay(300));
-    setTimeout(()=>overlay.classList.add('fade-out'),qaDelay(470));
-    setTimeout(()=>{overlay.classList.remove('active','fade-out');overlay.classList.add('hidden');overlay.setAttribute('aria-hidden','true')},qaDelay(820));
+    setTimeout(()=>{onBlack();},qaDelay(680));
+    setTimeout(()=>overlay.classList.add('fade-out'),qaDelay(1680));
+    setTimeout(()=>{overlay.classList.remove('active','fade-out');overlay.classList.add('hidden');overlay.setAttribute('aria-hidden','true')},qaDelay(2380));
   }
 
   // v0.25 DETAIL PASS ----------------------------------------------------
@@ -344,7 +344,7 @@
   function clearTyping(){if(typing?.timer)clearTimeout(typing.timer);typing=null}
   function clearDirectionTimer(){if(directionTimer)clearTimeout(directionTimer);directionTimer=null}
   const STORY_EMPHASIS_TERMS=[
-    '짐이 곧 국가다!','짐은 태양이다!','국가는 왕 한 사람보다 큽니다.','하늘 없이 혼자 뜨는 것은 아니었군.',
+    '영국에서 왕은 군림하되 통치하지 않는다.','짐이 곧 국가다!','짐은 태양이다!','국가는 왕 한 사람보다 큽니다.','하늘 없이 혼자 뜨는 것은 아니었군.',
     '왕권신수설','권리장전','관료제','상비군','파리 고등법원','의회','세금','왕권','왕관','전쟁','베르사유 궁전'
   ].sort((a,b)=>b.length-a.length);
   const STORY_EMPHASIS_RE=new RegExp(`(${STORY_EMPHASIS_TERMS.map(v=>v.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|')})`,'g');
@@ -352,7 +352,7 @@
     const raw=String(text).slice(0,limit);
     return raw.split(STORY_EMPHASIS_RE).map(part=>STORY_EMPHASIS_TERMS.includes(part)?`<span class=\"story-emphasis\">${escapeHtml(part)}</span>`:escapeHtml(part)).join('').replace(/\n/g,'<br>');
   }
-  const KEY_LINE_SNIPPETS=['애송이 앤','의회를 소집하라!','짐은 태양이다!','짐이 곧 국가다!','그건 프랑스입니다.','국가는 왕 한 사람보다 큽니다.','태양도…','하늘 없이 혼자 뜨는 것은 아니었군.'];
+  const KEY_LINE_SNIPPETS=['애송이 앤','의회를 소집하라!','영국에서 왕은 군림하되 통치하지 않는다.','짐은 태양이다!','짐이 곧 국가다!','그건 프랑스입니다.','국가는 왕 한 사람보다 큽니다.','태양도…','하늘 없이 혼자 뜨는 것은 아니었군.'];
   function isKeyLine(text){const t=String(text||'');return KEY_LINE_SNIPPETS.some(v=>t.includes(v))}
   function typeDelayFor(text){const t=String(text||'');if(isKeyLine(t))return 44;if(t.length>=95)return 24;if(t.length>=70)return 27;if(t.length>=45)return 30;return 34}
   function typeText(text,{instant=false,speed=1}={}){
@@ -700,8 +700,8 @@
     let entryHold=pendingSceneEntryHold;pendingSceneEntryHold=0;
     if(s.id==='scene-06'&&state.lineIndex===0&&!(teacherPreviewMode&&teacherFastMode)){
       screens.story.classList.remove('eye-opening');void screens.story.offsetWidth;screens.story.classList.add('eye-opening');
-      setTimeout(()=>screens.story.classList.remove('eye-opening'),qaDelay(1750));
-      entryHold=Math.max(entryHold,1550);
+      setTimeout(()=>screens.story.classList.remove('eye-opening'),qaDelay(3050));
+      entryHold=Math.max(entryHold,2850);
     }else screens.story.classList.remove('eye-opening');
     if(entryHold>0&&!(teacherPreviewMode&&teacherFastMode)){
       clearTyping();els.panel.classList.add('hidden');els.intertitle.classList.add('hidden');busy=true;if(sceneEntryTimer)clearTimeout(sceneEntryTimer);
@@ -774,7 +774,7 @@
     const tier=narrationTier(line),actionNarration=tier==='action',atmosphereNarration=tier==='atmosphere',historyNarration=tier==='history';
     const soloFocus=line.type==='monologue'||(currentScene()?.id==='scene-01'&&line.actorId==='louis14'&&state.lineIndex>=4&&state.lineIndex<=10);
     els.actorLayer?.classList.toggle('solo-focus',soloFocus);
-    els.panel.classList.remove('hidden','narration','monologue','narration-action','narration-context','narration-atmosphere','narration-history','key-silence','summon-line','emotion-line','reverse-impact-line');
+    els.panel.classList.remove('hidden','narration','monologue','narration-action','narration-context','narration-atmosphere','narration-history','key-silence','summon-line','emotion-line','reverse-impact-line','constitutional-line');
     els.panel.classList.toggle('narration',line.type==='narration');
     els.panel.classList.toggle('monologue',line.type==='monologue');
     els.panel.classList.toggle('narration-action',actionNarration);
@@ -790,6 +790,7 @@
     els.panel.dataset.speakerGroup=group;els.panel.classList.toggle('long-line',spokenText.length>=72);els.panel.classList.toggle('key-line',keyLine);
     els.panel.classList.toggle('emotion-line',emotionLine);
     els.panel.classList.toggle('reverse-impact-line',spokenText.includes('그건 프랑스입니다.'));
+    els.panel.classList.toggle('constitutional-line',spokenText.includes('영국에서 왕은 군림하되 통치하지 않는다.'));
     els.panel.classList.toggle('summon-line',/의회를\s*소집하라/.test(spokenText));
     applyDirectorContext(cue,line);
     requestAnimationFrame(()=>layoutPortraits());
@@ -883,7 +884,7 @@
       if(!next){state.sceneIndex=nextIndex;state.lineIndex=0;save();busy=false;return finishStory()}
       const newSet=(from?.place!==next?.place)||((SCENE_ASSET_MAP?.[from?.id]||'')!==(SCENE_ASSET_MAP?.[next?.id]||''));
       const timeCue=!!transitionLabelFor(from,next);
-      const move=()=>{state.sceneIndex=nextIndex;state.lineIndex=0;beforeBeatKey=null;afterBeatKey=null;save();pendingSceneEntryHold=(newSet||timeCue)?620:0;prepareScene()};
+      const move=()=>{state.sceneIndex=nextIndex;state.lineIndex=0;beforeBeatKey=null;afterBeatKey=null;save();pendingSceneEntryHold=(newSet||timeCue)?1180:0;prepareScene()};
       if(newSet||timeCue){runSceneFade(from,next,move);return}
       busy=false;move();
     };
