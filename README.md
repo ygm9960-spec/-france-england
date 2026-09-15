@@ -1,18 +1,25 @@
-# 태양왕이 여왕이 되었다 v0.10
+# 태양왕이 여왕이 되었다 v0.32 · LAYOUT & OPENING FADE
 
-사운드 적용 전 마지막 실전 완성도 패스입니다. v0.9 스토리는 그대로 유지하면서 화면 전달력, 논쟁 피드백, FINAL UI, 이미지 로딩과 저장 복구를 정리했습니다.
+현재 배포 기준은 **v0.32**입니다. 사용자가 수정한 v0.31을 그대로 기준으로 삼아 인물 자동 배치를 다시 정렬했습니다. 2인·3인 장면은 서로 겹치지 않도록 간격을 재조정했고, 실루엣 인물도 같은 자동 배치 계산에 포함됩니다. 독백과 첫 루이 단독 발언은 실제 1인 구도로 다시 계산되어 화면 중앙에 배치됩니다. 시작의 세 나레이션은 검은 화면에서 문장이 서서히 나타났다가 서서히 사라집니다.
 
-# v0.10 · Finish / Classroom Stability Pass
+## 배포
+이 폴더의 내용을 GitHub Pages 저장소 루트에 그대로 업로드/덮어쓰기합니다.
 
-- BGM/SFX 자산은 수정하지 않음.
-- 전용 이미지가 없던 시녀·프랑스 장군·???를 의도된 실루엣 캐스트로 복원.
-- 캐릭터가 해당 장면에서 실제로 소개되는 시점에 부드럽게 등장하도록 actor entrance 처리.
-- v0.9에서 숨겨진 direction에서 승격한 나레이션을 `SCENE` 행동 묘사로 별도 스타일링. 역사 설명 `NARRATION`과 시각적 무게를 분리.
-- 논쟁 정답 결과에 `논리탄환 → 반박 논점` 연결 스트립 추가. 기존 반박문은 그대로 유지.
-- FINAL 역논파 이후 장소/HUD가 거의 사라지도록 UI 소거 연출 강화. REALIZATION 진입 시 자동 복구.
-- 저장 상태 복구 시 scene/line/debate 범위를 검증하고, 조준 중이던 탄환은 안전하게 해제하여 중간상태 오류 방지.
-- 이미지 로딩 실패 시 1회 지연 재시도 후 기존 fallback으로 내려가도록 안정화.
-- 캐릭터/문서 WebP를 스마트폰 표시 크기에 맞게 재압축하여 배포 용량 감소.
-- 스토리 문구/순서/논쟁 데이터는 변경하지 않음.
+주요 파일:
+- `index.html`
+- `css/style.css`
+- `css/presentation.css`
+- `css/playerFlowFix.css`
+- `js/app.js`
+- `js/storyData.js`
+- `js/debateData.js`
+- `js/stageMap.js`
+- `js/assetMap.js`
+- `js/audioMap.js`
+- `js/visualMap.js`
+- `js/directorMap.js`
+- `js/portraitLayout.js`
+- `sw.js`
+- `images/`
 
-- SCENE 22의 빈 무대 정의 `S([])`를 `S()`로 수정하여 undefined 배우 항목 제거.
+자세한 변경사항은 `CHANGELOG_v0.32.md`를 참고하세요.

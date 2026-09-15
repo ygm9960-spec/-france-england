@@ -1,0 +1,29 @@
+v0.32 VALIDATION
+================
+Basis: user-uploaded v0.31 OPENING FOCUS build
+
+1. JavaScript syntax
+- node --check: all js/*.js + sw.js PASS
+
+2. CSS structure
+- style.css / presentation.css / playerFlowFix.css brace balance PASS
+
+3. Asset references
+- assetMap.js image paths all exist
+- index.html local JS/CSS references all exist
+
+4. Portrait geometry
+- all STAGE_MAP actor IDs now have PORTRAIT_METRICS coverage, including maid / french_general / unknown silhouettes
+- 1280x556, 960x426, 800x356, 640x300 actor-frame simulations: 0 out-of-bounds frames
+- monologue anne_louis face center: exact canvas center in geometry simulation
+- visible-cast layout: waiting actors are excluded until their actual first line
+
+5. Headless DOM/runtime smoke test
+- app boot via injected local HTML/CSS/JS: 0 page errors
+- SCENE 01 opening narration: opacity sampled from ~0 -> 1 -> 0, then next line fades in
+- SCENE 10: one visible actor centers first; after second actor enters, layout becomes left/right
+- SCENE 36 monologue: active actor is the only visible actor and uses one-person centered geometry
+- local image assets were injected as data URLs for visual layout screenshots because direct localhost navigation is blocked by the environment policy
+
+6. Not claimed
+- This is not a full end-to-end playthrough on a physical phone/browser.

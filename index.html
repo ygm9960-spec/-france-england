@@ -7,7 +7,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title>태양왕이 여왕이 되었다 · v0.20</title>
+  <title>태양왕이 여왕이 되었다 · v0.32</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -21,6 +21,7 @@
 
   <main id="app">
     <section id="titleScreen" class="screen title-screen active" aria-label="시작 화면">
+      <img class="title-poster-img" src="images/specials/title_poster.webp" alt="" aria-hidden="true">
       <div class="poster-bg"></div>
       <div class="poster-panel france-panel"><span>LOUIS XIV</span><b>태양왕</b></div>
       <div class="poster-panel england-panel"><span>QUEEN ANNE</span><b>영국의 왕관</b></div>
@@ -35,7 +36,7 @@
           <button id="restartBtn" class="ghost hidden">처음부터 시작</button>
         </div>
       </div>
-      <div class="version-tag">GAME / PLAYER FLOW QA · v0.20</div>
+      <div class="version-tag">GAME / LAYOUT & OPENING FADE · v0.32</div>
       <button id="soundBtn" class="icon-btn sound-btn" aria-label="진동 설정">진동 ON</button>
     </section>
 
@@ -50,6 +51,7 @@
       </header>
 
       <div id="stage" class="stage" data-tone="france">
+        <img id="sceneBackground" class="scene-background" src="images/backgrounds/bg_versailles_hall.webp" alt="" aria-hidden="true">
         <div class="stage-grid"></div>
         <div class="stage-vignette"></div>
         <div id="placeCard" class="place-card"><small>FRANCE</small><strong>베르사유 궁전</strong></div>
@@ -73,9 +75,6 @@
         </div>
         <div id="finalLockFx" class="final-lock-fx hidden" aria-hidden="true"></div>
         <div id="sunOverlay" class="sun-overlay" aria-hidden="true"><img id="sunEmblemImage" alt=""></div>
-        <div id="storyFx" class="story-fx" aria-live="polite"></div>
-        <div id="captionFx" class="caption-fx"></div>
-        <div id="shotFlash" class="shot-flash"></div>
       </div>
 
       <button id="dialoguePanel" class="dialogue-panel" aria-label="대사창">
@@ -91,7 +90,11 @@
         <em id="intertitleSubtitle"></em>
         <small>터치하여 계속 ›</small>
       </button>
-      <div id="sceneTransition" class="scene-transition hidden" aria-hidden="true"><span id="sceneTransitionLabel"></span></div>
+      <div id="openingNarrationOverlay" class="opening-narration-overlay hidden" aria-hidden="true"><div id="openingNarrationText"></div></div>
+      <div id="persistentSceneLayer" class="persistent-scene-layer hidden" aria-hidden="true"><img id="persistentSceneImage" alt=""></div>
+      <aside id="pinnedSceneDoc" class="pinned-scene-doc hidden" aria-hidden="true"><img id="pinnedSceneDocImage" alt=""><span id="pinnedSceneDocLabel"></span></aside>
+      <div id="conceptAcquireToast" class="concept-acquire-toast" aria-live="polite"></div>
+      <div id="actionBeatOverlay" class="action-beat-overlay hidden" aria-hidden="true"><div id="actionBeatText"></div></div>
     </section>
 
     <section id="debateScreen" class="screen debate-screen" aria-label="논쟁 화면">
@@ -142,6 +145,7 @@
       <p class="eyebrow">END · AFTER THE CROWN</p>
       <h2>강한 국가는<br><em>강한 왕 한 사람</em>으로 만들어지는가?</h2>
       <div class="end-questions">
+        <p>강한 국가는 강한 왕 한 사람으로 만들어지는가?</p>
         <p>루이는 왜 “애송이 앤”이라는 말을 취소했을까?</p>
         <p>프랑스와 영국은 왜 같은 재정·군사 국가이면서 다른 정치 구조를 만들었을까?</p>
       </div>
@@ -173,7 +177,7 @@
   </dialog>
 
   <dialog id="teacherDialog" class="teacher-dialog">
-    <div class="dialog-head"><div><small>TEACHER TOOLS · v0.20</small><h2>교사용 테스트</h2></div><button data-close="teacherDialog">닫기</button></div>
+    <div class="dialog-head"><div><small>TEACHER TOOLS · v0.32</small><h2>교사용 테스트</h2></div><button data-close="teacherDialog">닫기</button></div>
     <div id="teacherDebug" class="teacher-debug"></div>
     <div class="teacher-quick">
       <button data-debate-jump="tax">DEBATE 1 테스트</button>
@@ -199,8 +203,8 @@
   <script src="js/visualMap.js"></script>
   <script src="js/directorMap.js"></script>
   <link rel="stylesheet" href="css/presentation.css">
+  <link rel="stylesheet" href="css/playerFlowFix.css">
   <script src="js/portraitLayout.js"></script>
   <script src="js/app.js"></script>
-  <script src="js/playerFlowPatch.js"></script>
 </body>
 </html>

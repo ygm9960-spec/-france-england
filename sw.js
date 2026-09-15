@@ -1,5 +1,5 @@
-const CACHE='sun-king-queen-v0.21-20260911';
-const APP_SHELL=['./css/presentation.css','./js/portraitLayout.js','./js/playerFlowPatch.js','./','./index.html','./css/style.css','./js/storyData.js','./js/debateData.js','./js/stageMap.js','./js/assetMap.js','./js/audioMap.js','./js/visualMap.js','./js/directorMap.js','./js/app.js'];
+const CACHE='sun-king-queen-v0.32-20260916';
+const APP_SHELL=['./css/presentation.css','./css/playerFlowFix.css','./js/portraitLayout.js','./','./index.html','./css/style.css','./js/storyData.js','./js/debateData.js','./js/stageMap.js','./js/assetMap.js','./js/audioMap.js','./js/visualMap.js','./js/directorMap.js','./js/app.js','./images/specials/title_poster.webp','./images/backgrounds/bg_versailles_hall.webp','./images/backgrounds/bg_dark_throne.webp','./images/backgrounds/bg_anne_bedroom.webp','./images/backgrounds/bg_english_study.webp','./images/backgrounds/bg_parliament.webp','./images/backgrounds/bg_harbor_departure.webp','./images/backgrounds/bg_dream_hall.webp'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(APP_SHELL)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('sun-king-queen-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
 async function networkFirst(req){const cache=await caches.open(CACHE);try{const res=await fetch(req);if(res&&res.ok)cache.put(req,res.clone());return res}catch{const hit=await cache.match(req);return hit||Response.error()}}
