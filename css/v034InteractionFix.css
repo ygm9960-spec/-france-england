@@ -204,3 +204,68 @@ img{display:block}
     transform:translateX(-50%)!important;
   }
 }
+
+
+/* ===== v0.37 AUTHORITATIVE FULL-VIEWPORT RESET =====
+   Old player-flow CSS centered a 16:9 .screen with left:50% + translateX(-50%).
+   Later viewport CSS changed width to 100% but did not cancel that transform,
+   shifting the whole app half a viewport to the left. This block is last-loaded
+   and intentionally owns the root geometry. */
+html,body,#app{
+  left:0!important;right:0!important;top:0!important;
+  width:100%!important;max-width:none!important;
+  margin:0!important;transform:none!important;translate:none!important;
+}
+#app{
+  position:fixed!important;inset:0!important;
+  height:var(--app-h,100dvh)!important;
+  min-height:0!important;overflow:hidden!important;
+}
+.screen{
+  position:absolute!important;
+  inset:0!important;
+  left:0!important;right:0!important;top:0!important;bottom:0!important;
+  width:100%!important;max-width:none!important;
+  height:100%!important;min-height:0!important;
+  margin:0!important;
+  transform:none!important;translate:none!important;
+  box-shadow:none!important;
+}
+/* Neutralize the older ultra-wide screen-width limiter too. */
+@media (min-aspect-ratio:19/9) and (orientation:landscape){
+  .screen{width:100%!important;left:0!important;right:0!important;transform:none!important}
+}
+
+/* The generated poster is now the ONLY title background. */
+.title-screen{
+  background:#07090d!important;
+  isolation:isolate!important;
+}
+.title-screen .title-poster-img{
+  position:absolute!important;inset:0!important;
+  left:0!important;top:0!important;
+  width:100%!important;height:100%!important;min-width:0!important;max-width:none!important;
+  transform:none!important;translate:none!important;
+  object-fit:cover!important;object-position:center center!important;
+  margin:0!important;padding:0!important;
+  border:0!important;outline:0!important;box-shadow:none!important;
+  background:transparent!important;z-index:0!important;
+}
+/* Obsolete title-art layers are removed from HTML in v0.37; keep a hard guard
+   so cached/partial DOM versions cannot resurrect them. */
+.title-screen .poster-bg,
+.title-screen .poster-panel,
+.title-screen .poster-crown{display:none!important;background:none!important;border:0!important;box-shadow:none!important}
+.title-screen .title-copy,
+.title-screen .sound-btn,
+.title-screen .fullscreen-btn,
+.title-screen .version-tag{z-index:3!important}
+
+/* On short mobile landscape screens preserve the full generated poster and
+   center any unavoidable side gutters symmetrically. */
+@media (orientation:landscape) and (max-height:600px){
+  .title-screen .title-poster-img{
+    object-fit:contain!important;
+    object-position:center center!important;
+  }
+}
