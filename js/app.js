@@ -2,7 +2,7 @@
   'use strict';
   const $=s=>document.querySelector(s);
   const $$=s=>Array.from(document.querySelectorAll(s));
-  const APP_VERSION='v0.46';
+  const APP_VERSION='v0.47';
   const STORAGE_KEY='sun-king-queen-v0.27'; // preserve existing classroom progress
   const LEGACY_KEYS=['sun-king-queen-v0.26','sun-king-queen-v0.25','sun-king-queen-v0.24','sun-king-queen-v0.23','sun-king-queen-v0.22','sun-king-queen-v0.21','sun-king-queen-v0.20','sun-king-queen-v0.19','sun-king-queen-v0.18','sun-king-queen-v0.17','sun-king-queen-v0.16','sun-king-queen-v0.15','sun-king-queen-v0.14','sun-king-queen-v0.13','sun-king-queen-v0.12','sun-king-queen-v0.11','sun-king-queen-v0.10','sun-king-queen-v0.9','sun-king-queen-v0.8','sun-king-queen-v0.7','sun-king-queen-v0.6','sun-king-queen-v0.5','sun-king-queen-v0.4','sun-king-queen-v0.3','sun-king-queen-v0.2'];
   const TOTAL_BULLETS=LOGIC_BULLETS.length;
@@ -189,9 +189,12 @@
   // it becomes the scene background while the following dialogue/narration plays.
   const EVENT_BACKDROP_RANGES={
     'scene-02':{start:6,end:9,key:'young_louis_fronde'},
+    'scene-06':{start:0,end:2,key:'louis_wakes_as_anne'},
+    'scene-09':{start:12,end:14,key:'summon_parliament_event'},
     'scene-20':{start:4,end:11,key:'charles_door_flash'},
     'scene-28':{start:2,end:7,key:'dream_crown_offer'},
     'scene-32':{start:5,end:9,key:'charles_door_flash'},
+    'scene-33':{start:6,end:7,key:'sun_king_outburst'},
     'scene-36':{start:10,end:15,key:'realization_montage'},
     'scene-40':{start:2,end:3,key:'mirror_return'}
   };
@@ -321,30 +324,40 @@
       currentKey=key;
       if(!state.audio.enabled||!unlocked||!path)return;
       const from=channels[active],pending=channels[1-active];
-      // TITLE and FRANCE intentionally share the same recording: keep playing without a restart.
-      // Also cancel an in-progress crossfade if the player quickly returns to the current theme.
-      if(from._bgmPath===path&&!from.paused){
+      const target=targetFor(key);
+      // If the requested key is already the active music, just normalize volume and silence the spare channel.
+      if(currentKey===key&&from._bgmPath===path&&!from.paused){
         const keepToken=++fadeToken;
-        rampVolume(from,targetFor(key),320);
-        if(!pending.paused){rampVolume(pending,0,260);setTimeout(()=>{if(keepToken!==fadeToken)return;try{pending.pause();pending.currentTime=0}catch{}},280)}
+        rampVolume(from,target,260);
+        if(!pending.paused){rampVolume(pending,0,220);setTimeout(()=>{if(keepToken!==fadeToken)return;try{pending.pause();pending.currentTime=0;pending._bgmPath=''}catch{}},240)}
         return;
       }
-      // If the requested track is already fading in on the other channel, do not restart it.
-      if(pending._bgmPath===path&&!pending.paused)return;
+      // TITLE and FRANCE intentionally share the same recording: keep playing without a restart.
+      if(from._bgmPath===path&&!from.paused){
+        const keepToken=++fadeToken;
+        rampVolume(from,target,320);
+        if(!pending.paused){rampVolume(pending,0,260);setTimeout(()=>{if(keepToken!==fadeToken)return;try{pending.pause();pending.currentTime=0;pending._bgmPath=''}catch{}},280)}
+        return;
+      }
+      // If the requested track is already fading in on the other channel, finish that crossfade instead of layering more audio.
+      if(pending._bgmPath===path&&!pending.paused){
+        const token=++fadeToken,start=performance.now(),dur=teacherFastMode?80:420,fromStart=Number(from.volume)||0,pendingStart=Number(pending.volume)||0;
+        const step=now=>{if(token!==fadeToken)return;const x=Math.min(1,(now-start)/dur);pending.volume=pendingStart+(target-pendingStart)*x;from.volume=Math.max(0,fromStart*(1-x));if(x<1)requestAnimationFrame(step);else{try{from.pause();from.currentTime=0;from._bgmPath=''}catch{}active=1-active}};
+        requestAnimationFrame(step);
+        return;
+      }
       const next=1-active,to=channels[next],token=++fadeToken;
-      const target=targetFor(key);
       try{
+        try{sting.pause();sting.currentTime=0;sting.volume=0}catch{}
         to.src=path;to._bgmPath=path;to.loop=true;to.currentTime=0;to.volume=0;
         const pr=to.play();
         if(pr&&pr.catch)pr.catch(()=>{
-          // Some mobile browsers only allow the audio element first activated by a user gesture.
-          // Fall back to switching the already-active element so music still continues.
           if(token!==fadeToken)return;
-          try{from.pause();from.src=path;from._bgmPath=path;from.loop=true;from.currentTime=0;from.volume=target;const retry=from.play();if(retry&&retry.catch)retry.catch(()=>{});}catch{}
+          try{from.pause();from.src=path;from._bgmPath=path;from.loop=true;from.currentTime=0;from.volume=target;const retry=from.play();if(retry&&retry.catch)retry.catch(()=>{});active=active}catch{}
         });
       }catch{return}
-      const start=performance.now(),dur=teacherFastMode?80:1050,fromStart=Number(from.volume)||0;
-      const step=now=>{if(token!==fadeToken)return;const x=Math.min(1,(now-start)/dur);to.volume=target*x;from.volume=Math.max(0,fromStart*(1-x));if(x<1)requestAnimationFrame(step);else{try{from.pause();from.currentTime=0}catch{}active=next}};
+      const start=performance.now(),dur=teacherFastMode?80:900,fromStart=Number(from.volume)||0;
+      const step=now=>{if(token!==fadeToken)return;const x=Math.min(1,(now-start)/dur);to.volume=target*x;from.volume=Math.max(0,fromStart*(1-x));if(x<1)requestAnimationFrame(step);else{try{from.pause();from.currentTime=0;from._bgmPath=''}catch{}active=next}};
       requestAnimationFrame(step);
     }
     function stinger(key){
@@ -696,12 +709,24 @@
   }
   function continueSpecial(){if(!specialReady||!specialDone)return;const done=specialDone;specialDone=null;specialReady=false;hideSpecial();haptic(6);done()}
   function hideFlashback(){
-    flashbackDone=null;
+    flashbackDone=null;pinnedFlashbackSceneId=null;pinnedFlashbackUntilLine=-1;
     els.flashbackLayer?.classList.add('hidden');
     els.flashbackLayer?.classList.remove('interactive');
     els.flashbackLayer?.setAttribute('aria-hidden','true');
     els.flashbackImage?.classList.add('hidden');
     if(els.flashbackImage)els.flashbackImage.removeAttribute('src');
+  }
+  function pinFlashback(actorId,label='',untilLine=0){
+    const def=ACTOR_DEFS?.[actorId];
+    showOverlayImage(resolveActorAsset?.(actorId,'default'),label||def?.code||'',def?.name||label||actorId,actorId,0);
+    els.flashbackLayer?.classList.remove('interactive');
+    pinnedFlashbackSceneId=currentScene()?.id||null;
+    pinnedFlashbackUntilLine=untilLine;
+  }
+  function syncPinnedFlashback(){
+    if(!pinnedFlashbackSceneId)return;
+    const scene=currentScene();
+    if(!scene||scene.id!==pinnedFlashbackSceneId||state.lineIndex>pinnedFlashbackUntilLine){hideFlashback();}
   }
   function showOverlayImage(path,label='',fallback='',datasetActor='overlay',duration=900){
     if(!els.flashbackLayer)return;
@@ -751,7 +776,7 @@
   function prepareScene(){
     const s=currentScene();
     if(!s)return finishStory();
-    clearOpeningNarration();screens.story.classList.remove('ending-fade','unknown-voice-mode','event-backdrop-mode');els.stage.style.opacity='1';els.actorLayer?.classList.remove('solo-focus');
+    clearOpeningNarration();screens.story.classList.remove('ending-fade','unknown-voice-mode','event-backdrop-mode');els.stage.style.opacity='1';els.actorLayer?.classList.remove('solo-focus');syncPinnedFlashback();
     screens.story.dataset.chapterType=s.chapter==='FINAL'?'final':s.chapter==='REALIZATION'?'realization':s.chapter==='EPILOGUE'?'epilogue':String(s.chapter||'').includes('MEMORY')?'memory':'story';
     screens.story.classList.toggle('dream-memory-mode',s.tone==='dream');
     hidePersistentSceneVisual();
@@ -858,9 +883,10 @@
     els.speaker.textContent=line.type==='narration'?'':(line.speaker||'');
     const group=line.type==='narration'?'narration':line.type==='monologue'?'monologue':(ACTOR_DEFS?.[line.actorId]?.group||'neutral');
     syncActorPresence(currentScene());
-    const spokenText=String(line.text||''),keyLine=isKeyLine(spokenText),emotionLine=line.type==='dialogue'&&(spokenText.length<=48&&(keyLine||/[!！]/.test(spokenText)));
+    const spokenText=String(line.text||''),keyLine=isKeyLine(spokenText),emotionLine=line.type==='dialogue'&&(spokenText.length<=48&&(keyLine||/[!！]/.test(spokenText))),heatedLine=line.type==='dialogue'&&(/처형|짐이\s*곧\s*국가다|짐은\s*태양이다|감히\s*나를|신에게서\s*왔다/.test(spokenText)||currentScene()?.id==='scene-33');
     els.panel.dataset.speakerGroup=group;els.panel.classList.toggle('long-line',spokenText.length>=72);els.panel.classList.toggle('key-line',keyLine);
     els.panel.classList.toggle('emotion-line',emotionLine);
+    els.panel.classList.toggle('heated-line',heatedLine);
     els.panel.classList.toggle('reverse-impact-line',spokenText.includes('그건 프랑스입니다.'));
     els.panel.classList.toggle('constitutional-line',spokenText.includes('영국에서 왕은 군림하되 통치하지 않는다.'));
     els.panel.classList.toggle('summon-line',/의회를\s*소집하라/.test(spokenText));
@@ -898,8 +924,12 @@
     delete els.actorLayer.dataset.shotPhase;els.actorLayer?.classList.remove('solo-focus');const cue=currentCue(),scene=currentScene(),special=SPECIAL_CUE_MAP?.[`${scene?.id}:${state.lineIndex}`]||null;clearTyping();activateActor(cue?.focus||null);els.panel.classList.add('hidden');els.intertitle.classList.add('hidden');applyDirectorContext(cue,line);
     const resolvedEffect=cue?.effect||line.effect;updateProgress();save();busy=true;clearDirectionTimer();
     const finishDirection=()=>{busy=false;state.lineIndex++;beforeBeatKey=null;afterBeatKey=null;save();renderCurrent()};
-    // Past Louis remains on screen until the student explicitly taps it.
-    if(resolvedEffect==='flashback_history'){showInteractiveFlashback('louis14','과거의 루이',finishDirection);return}
+    // Past Louis should remain visible together with the following dialogue box.
+    if(resolvedEffect==='flashback_history'){
+      pinFlashback('louis14','과거의 루이',state.lineIndex+1);
+      directionTimer=setTimeout(()=>{directionTimer=null;finishDirection()},qaDelay(80));
+      return;
+    }
     // Remove the awkward freeze after “그건 프랑스입니다.”; advance invisibly.
     if(scene?.id==='scene-34'&&resolvedEffect==='freeze'){finishDirection();return}
     // Event images now become persistent scene backdrops. Give the illustration a
@@ -917,7 +947,7 @@
   }
 
   function renderCurrent(){
-    syncActorPresence(currentScene());syncPersistentProp();syncFinalPressure();
+    syncPinnedFlashback();syncActorPresence(currentScene());syncPersistentProp();syncFinalPressure();
     const s=currentScene();if(!s)return finishStory();
     const line=currentLine();if(!line)return nextScene();
     if(!state.debate)AudioManager.play(sceneBgmKey?.(s,state.lineIndex)||'ENGLAND');

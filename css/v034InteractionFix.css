@@ -582,6 +582,18 @@ html,body,#app{
   line-height:1.24!important;font-weight:820!important;
   animation:dialogueImpactV42 .34s cubic-bezier(.2,.82,.3,1) both;
 }
+.story-screen .dialogue-panel.heated-line .dialogue-text{
+  color:#f1a6a6!important;
+  text-shadow:0 0 14px rgba(145,22,22,.26)!important;
+}
+.story-screen .dialogue-panel.heated-line .story-emphasis{
+  color:#ff8c8c!important;
+  font-weight:950!important;
+}
+.story-screen .dialogue-panel.heated-line{
+  border-left-color:#a54a4a!important;
+  box-shadow:0 11px 36px rgba(0,0,0,.43),-8px 0 24px rgba(145,22,22,.12)!important;
+}
 .story-screen .dialogue-panel.reverse-impact-line .dialogue-text{
   font-size:clamp(20px,2.28vw,31px)!important;
   font-weight:920!important;letter-spacing:.012em!important;color:#e8edf2!important;
