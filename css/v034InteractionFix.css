@@ -841,3 +841,14 @@ html,body,#app{
 @media(prefers-reduced-motion:reduce){
   .story-screen .dialogue-panel.constitutional-line .dialogue-text{animation:none!important}
 }
+
+/* ===== v0.45 COMPLETE SOUNDTRACK CONTROLS ===== */
+.title-screen .music-btn{
+  position:absolute;right:max(14px,env(safe-area-inset-right));top:max(14px,env(safe-area-inset-top));
+  z-index:6;background:rgba(5,7,10,.42);border-color:rgba(244,239,228,.14);font-size:10px;color:rgba(244,239,228,.88);backdrop-filter:blur(6px);
+}
+.title-screen .sound-btn{top:calc(env(safe-area-inset-top) + 58px)!important;z-index:6!important}
+@media (orientation:landscape) and (max-height:600px){
+  .title-screen .music-btn{right:max(8px,env(safe-area-inset-right));top:max(7px,env(safe-area-inset-top));min-height:32px;padding:5px 9px;font-size:8px}
+  .title-screen .sound-btn{right:max(8px,env(safe-area-inset-right))!important;top:calc(env(safe-area-inset-top) + 42px)!important;min-height:32px!important;padding:5px 9px!important;font-size:8px!important}
+}

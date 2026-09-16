@@ -2,7 +2,7 @@
   'use strict';
   const $=s=>document.querySelector(s);
   const $$=s=>Array.from(document.querySelectorAll(s));
-  const APP_VERSION='v0.44';
+  const APP_VERSION='v0.45';
   const STORAGE_KEY='sun-king-queen-v0.27'; // preserve existing classroom progress
   const LEGACY_KEYS=['sun-king-queen-v0.26','sun-king-queen-v0.25','sun-king-queen-v0.24','sun-king-queen-v0.23','sun-king-queen-v0.22','sun-king-queen-v0.21','sun-king-queen-v0.20','sun-king-queen-v0.19','sun-king-queen-v0.18','sun-king-queen-v0.17','sun-king-queen-v0.16','sun-king-queen-v0.15','sun-king-queen-v0.14','sun-king-queen-v0.13','sun-king-queen-v0.12','sun-king-queen-v0.11','sun-king-queen-v0.10','sun-king-queen-v0.9','sun-king-queen-v0.8','sun-king-queen-v0.7','sun-king-queen-v0.6','sun-king-queen-v0.5','sun-king-queen-v0.4','sun-king-queen-v0.3','sun-king-queen-v0.2'];
   const TOTAL_BULLETS=LOGIC_BULLETS.length;
@@ -12,14 +12,14 @@
     title:$('#titleScreen'),story:$('#storyScreen'),debate:$('#debateScreen'),end:$('#endScreen')
   };
   const els={
-    continue:$('#continueBtn'),start:$('#startBtn'),restart:$('#restartBtn'),sound:$('#soundBtn'),
+    continue:$('#continueBtn'),start:$('#startBtn'),restart:$('#restartBtn'),music:$('#musicBtn'),sound:$('#soundBtn'),
     chapter:$('#chapterLabel'),scene:$('#sceneLabel'),progress:$('#progressBar'),stage:$('#stage'),sceneBackground:$('#sceneBackground'),place:$('#placeCard'),
     actorLayer:$('#actorLayer'),panel:$('#dialoguePanel'),lineMode:$('#lineMode'),speaker:$('#speakerName'),text:$('#dialogueText'),hint:$('#nextHint'),
     sun:$('#sunOverlay'),finalBulletBadge:$('#finalBulletBadge'),
     intertitle:$('#intertitleOverlay'),interKicker:$('#intertitleKicker'),interTitle:$('#intertitleTitle'),interSub:$('#intertitleSubtitle'),
     debateNumber:$('#debateNumber'),debateTopic:$('#debateTopic'),count:$('#bulletCount'),arena:$('#debateArena'),rail:$('#statementRail'),statement:$('#statementText'),debatePrompt:$('#debatePrompt'),aim:$('#aimPulse'),impact:$('#impactText'),deck:$('#bulletDeck'),
     rebuttal:$('#debateRebuttal'),rebuttalLabel:$('#rebuttalLabel'),rebuttalTitle:$('#rebuttalTitle'),rebuttalLogic:$('#rebuttalLogic'),rebuttalText:$('#rebuttalText'),rebuttalNext:$('#rebuttalNext'),
-    history:$('#historyDialog'),historyList:$('#historyList'),concept:$('#conceptDialog'),conceptList:$('#conceptList'),menu:$('#menuDialog'),
+    history:$('#historyDialog'),historyList:$('#historyList'),concept:$('#conceptDialog'),conceptList:$('#conceptList'),menu:$('#menuDialog'),menuMusic:$('#menuMusic'),
     teacher:$('#teacherDialog'),teacherNav:$('#teacherNav'),teacherDebug:$('#teacherDebug'),teacherPreviewBadge:$('#teacherPreviewBadge'),
     teacherExitPreview:$('#teacherExitPreview'),teacherCacheRefresh:$('#teacherCacheRefresh'),
     propLayer:$('#propLayer'),propCard:$('#propCard'),propImage:$('#propImage'),propFallback:$('#propFallback'),
@@ -220,11 +220,20 @@
     if(time)return time.replace(/\s+/g,' ');
     return placeChanged?place:'';
   }
+  function shouldPlayPassage(from,to){
+    if(!from||!to)return false;
+    const label=transitionLabelFor(from,to);
+    const chapterChanged=from.chapter!==to.chapter;
+    const countryChanged=from.country!==to.country;
+    const timeShift=/그날|다음|새벽|아침|오전|오후|저녁|밤|며칠/.test(label||String(to.title||''));
+    return chapterChanged||countryChanged||timeShift;
+  }
   function runSceneFade(from,to,onBlack){
     const overlay=els.sceneFadeOverlay,labelEl=els.sceneFadeLabel;
     if(!overlay||teacherPreviewMode&&teacherFastMode){onBlack();return;}
     const label=transitionLabelFor(from,to);
     if(labelEl)labelEl.textContent=label;
+    if(shouldPlayPassage(from,to))AudioManager?.stinger?.('PASSAGE');
     overlay.classList.remove('hidden','fade-out');
     overlay.setAttribute('aria-hidden','false');
     requestAnimationFrame(()=>requestAnimationFrame(()=>overlay.classList.add('active')));
@@ -287,24 +296,85 @@
   const AudioManager=(()=>{
     const channels=[new Audio(),new Audio()];
     channels.forEach(a=>{a.loop=true;a.preload='auto'});
-    let active=0,currentKey=null,unlocked=false,fadeToken=0;
-    function unlock(){unlocked=true}
-    function setVolume(v){state.audio.volume=Math.max(0,Math.min(1,Number(v)||0));channels.forEach(a=>a.volume=Math.min(a.volume,state.audio.volume))}
-    function stopAll(){fadeToken++;channels.forEach(a=>{try{a.pause();a.currentTime=0}catch{}});currentKey=null}
-    function play(key){
-      const cfg=AUDIO_MAP?.bgm?.[key];const path=cfg?.path;
-      if(!state.audio.enabled||!unlocked||!path){currentKey=key;return}
-      if(currentKey===key&&!channels[active].paused)return;
-      currentKey=key;const next=1-active,from=channels[active],to=channels[next];const token=++fadeToken;
-      try{to.src=path;to.loop=true;to.currentTime=0;to.volume=0;to.play().catch(()=>{})}catch{return}
-      const target=Math.min(1,(cfg.volume??1)*state.audio.volume);const start=performance.now(),dur=teacherFastMode?80:900;
-      const step=now=>{if(token!==fadeToken)return;const t=Math.min(1,(now-start)/dur);to.volume=target*t;from.volume=Math.max(0,(1-t)*Math.min(from.volume||target,target));if(t<1)requestAnimationFrame(step);else{try{from.pause()}catch{}active=next}};
+    const sting=new Audio();sting.loop=false;sting.preload='auto';
+    let active=0,currentKey=null,unlocked=false,fadeToken=0,stingerToken=0,duck=1;
+    function cfgFor(key){return AUDIO_MAP?.bgm?.[key]||null}
+    function targetFor(key){const cfg=cfgFor(key);return state.audio.enabled&&cfg?Math.min(1,(cfg.volume??1)*state.audio.volume*duck):0}
+    function rampVolume(audio,target,dur=420,tokenGuard=null){
+      const startVol=Number(audio.volume)||0,start=performance.now();
+      const token=tokenGuard;
+      const step=now=>{if(token&&token()===false)return;const x=Math.min(1,(now-start)/Math.max(1,dur));audio.volume=startVol+(target-startVol)*x;if(x<1)requestAnimationFrame(step)};
       requestAnimationFrame(step);
     }
+    function unlock(){unlocked=true}
+    function setVolume(v){
+      state.audio.volume=Math.max(0,Math.min(1,Number(v)||0));
+      if(currentKey&&!channels[active].paused)rampVolume(channels[active],targetFor(currentKey),260);
+    }
+    function stopAll(){
+      fadeToken++;stingerToken++;channels.forEach(a=>{try{a.pause();a.currentTime=0;a.volume=0}catch{}});
+      try{sting.pause();sting.currentTime=0;sting.volume=0}catch{}
+      currentKey=null;duck=1;channels.forEach(a=>{a._bgmPath=''})
+    }
+    function play(key){
+      const cfg=cfgFor(key),path=cfg?.path;
+      currentKey=key;
+      if(!state.audio.enabled||!unlocked||!path)return;
+      const from=channels[active],pending=channels[1-active];
+      // TITLE and FRANCE intentionally share the same recording: keep playing without a restart.
+      // Also cancel an in-progress crossfade if the player quickly returns to the current theme.
+      if(from._bgmPath===path&&!from.paused){
+        const keepToken=++fadeToken;
+        rampVolume(from,targetFor(key),320);
+        if(!pending.paused){rampVolume(pending,0,260);setTimeout(()=>{if(keepToken!==fadeToken)return;try{pending.pause();pending.currentTime=0}catch{}},280)}
+        return;
+      }
+      // If the requested track is already fading in on the other channel, do not restart it.
+      if(pending._bgmPath===path&&!pending.paused)return;
+      const next=1-active,to=channels[next],token=++fadeToken;
+      const target=targetFor(key);
+      try{
+        to.src=path;to._bgmPath=path;to.loop=true;to.currentTime=0;to.volume=0;
+        const pr=to.play();
+        if(pr&&pr.catch)pr.catch(()=>{
+          // Some mobile browsers only allow the audio element first activated by a user gesture.
+          // Fall back to switching the already-active element so music still continues.
+          if(token!==fadeToken)return;
+          try{from.pause();from.src=path;from._bgmPath=path;from.loop=true;from.currentTime=0;from.volume=target;const retry=from.play();if(retry&&retry.catch)retry.catch(()=>{});}catch{}
+        });
+      }catch{return}
+      const start=performance.now(),dur=teacherFastMode?80:1050,fromStart=Number(from.volume)||0;
+      const step=now=>{if(token!==fadeToken)return;const x=Math.min(1,(now-start)/dur);to.volume=target*x;from.volume=Math.max(0,fromStart*(1-x));if(x<1)requestAnimationFrame(step);else{try{from.pause();from.currentTime=0}catch{}active=next}};
+      requestAnimationFrame(step);
+    }
+    function stinger(key){
+      const cfg=AUDIO_MAP?.stingers?.[key];if(!state.audio.enabled||!unlocked||!cfg?.path)return;
+      const token=++stingerToken,maxMs=Math.max(1800,Number(cfg.maxMs)||6500);
+      try{sting.pause();sting.src=cfg.path;sting.currentTime=0;sting.volume=0}catch{}
+      duck=.42;
+      if(currentKey&&!channels[active].paused)rampVolume(channels[active],targetFor(currentKey),360);
+      try{const pr=sting.play();if(pr&&pr.catch)pr.catch(()=>{})}catch{}
+      const peak=Math.min(1,(cfg.volume??1)*state.audio.volume);
+      rampVolume(sting,peak,420,()=>token===stingerToken);
+      const finish=()=>{
+        if(token!==stingerToken)return;
+        rampVolume(sting,0,600,()=>token===stingerToken);
+        setTimeout(()=>{if(token!==stingerToken)return;try{sting.pause();sting.currentTime=0}catch{}duck=1;if(currentKey&&!channels[active].paused)rampVolume(channels[active],targetFor(currentKey),700)},620);
+      };
+      setTimeout(finish,teacherFastMode?180:maxMs);
+    }
     function sfx(key){const cfg=AUDIO_MAP?.sfx?.[key];if(!state.audio.enabled||!unlocked||!cfg?.path)return;try{const a=new Audio(cfg.path);a.volume=Math.min(1,(cfg.volume??1)*state.audio.volume);a.play().catch(()=>{})}catch{}}
-    return {unlock,play,sfx,stopAll,setVolume};
+    function enabled(v){
+      state.audio.enabled=!!v;
+      if(!state.audio.enabled){stopAll();return}
+      unlock();
+    }
+    return {unlock,play,stinger,sfx,stopAll,setVolume,enabled,get currentKey(){return currentKey}};
   })();
-  document.addEventListener('pointerdown',()=>AudioManager.unlock(),{once:true,capture:true});
+  document.addEventListener('pointerdown',()=>{
+    AudioManager.unlock();
+    if(screens.title?.classList.contains('active')&&state.audio.enabled)AudioManager.play('TITLE');
+  },{once:true,capture:true});
   function show(name){Object.values(screens).forEach(s=>s.classList.remove('active'));screens[name].classList.add('active')}
   function escapeHtml(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
   function currentScene(){return STORY_DATA[state.sceneIndex]}
@@ -331,6 +401,8 @@
     els.restart.classList.toggle('hidden',!has);
     els.start.classList.toggle('hidden',has);
     els.start.textContent=state.endingSeen?'다시 시작':'이야기 시작';
+    if(els.music)els.music.textContent=`음악 ${state.audio?.enabled!==false?'ON':'OFF'}`;
+    if(els.menuMusic)els.menuMusic.textContent=`배경음악 ${state.audio?.enabled!==false?'ON':'OFF'}`;
     els.sound.textContent=`진동 ${state.haptics?'ON':'OFF'}`;
   }
   function applyStaticArt(){
@@ -690,7 +762,7 @@
     const uiTone=s.chapter==='FINAL'?'final':s.chapter==='REALIZATION'?'realization':s.chapter==='EPILOGUE'?'epilogue':(s.tone==='dream'||String(s.chapter||'').includes('MEMORY'))?'memory':s.country==='FRANCE'?'france':'england';
     screens.story.dataset.uiTone=uiTone;
     els.place.innerHTML=`<small>${escapeHtml(s.country)}</small><strong>${escapeHtml(s.place)}</strong>`;
-    renderStageActors(s);applySceneAsset(s);applySceneVisual(s);preloadSceneAssets(state.sceneIndex);AudioManager.play(sceneBgmKey?.(s)||'ENGLAND');
+    renderStageActors(s);applySceneAsset(s);applySceneVisual(s);preloadSceneAssets(state.sceneIndex);AudioManager.play(sceneBgmKey?.(s,state.lineIndex)||'ENGLAND');
     els.stage.dataset.camera='default';delete els.actorLayer.dataset.shotPhase;
     if(s.chapter!=='FINAL')els.stage.classList.remove('sun-active');
     els.finalBulletBadge.classList.toggle('hidden',s.chapter!=='FINAL');
@@ -848,6 +920,7 @@
     syncActorPresence(currentScene());syncPersistentProp();syncFinalPressure();
     const s=currentScene();if(!s)return finishStory();
     const line=currentLine();if(!line)return nextScene();
+    if(!state.debate)AudioManager.play(sceneBgmKey?.(s,state.lineIndex)||'ENGLAND');
     syncBackdropEventMode();
     screens.story.classList.toggle('unknown-voice-mode',line.type==='dialogue'&&(line.speaker==='???'||line.actorId==='unknown'));
     if(line.type==='direction')return executeDirection(line);
@@ -1101,7 +1174,7 @@
     const p=persistentStateForDebug();
     const scene=STORY_DATA[p.sceneIndex];
     const debate=p.debate?`${p.debate.id} / R${p.debate.round+1} / ${p.debate.phase}`:'없음';
-    els.teacherDebug.innerHTML=`<b>${APP_VERSION}</b><span>저장 장면: ${escapeHtml(scene?`SCENE ${String(scene.number).padStart(2,'0')} · ${scene.title}`:'없음')}</span><span>line: ${p.lineIndex} · debate: ${escapeHtml(debate)}</span><span>USED: ${p.usedBullets.length}/${TOTAL_BULLETS} · 기록: ${p.history.length}/${HISTORY_LIMIT}</span><span>FAST QA: ${teacherFastMode?'ON':'OFF'} · audio skeleton: ${state.audio?.enabled?'ON':'OFF'}</span><span>교사용 점프는 학생 저장을 변경하지 않습니다.</span>`;
+    els.teacherDebug.innerHTML=`<b>${APP_VERSION}</b><span>저장 장면: ${escapeHtml(scene?`SCENE ${String(scene.number).padStart(2,'0')} · ${scene.title}`:'없음')}</span><span>line: ${p.lineIndex} · debate: ${escapeHtml(debate)}</span><span>USED: ${p.usedBullets.length}/${TOTAL_BULLETS} · 기록: ${p.history.length}/${HISTORY_LIMIT}</span><span>FAST QA: ${teacherFastMode?'ON':'OFF'} · BGM: ${state.audio?.enabled?'ON':'OFF'}</span><span>교사용 점프는 학생 저장을 변경하지 않습니다.</span>`;
   }
   function jumpToScene(index){
     const s=STORY_DATA[index];if(!s)return;beginTeacherPreview();
@@ -1135,6 +1208,20 @@
   }
 
   function restartConfirm(){if(confirm('저장된 진행을 지우고 처음부터 시작할까요?'))startStory(true)}
+  function desiredMusicKey(){
+    if(screens.title?.classList.contains('active'))return 'TITLE';
+    if(screens.debate?.classList.contains('active'))return 'DEBATE';
+    if(screens.story?.classList.contains('active'))return sceneBgmKey?.(currentScene(),state.lineIndex)||'ENGLAND';
+    if(screens.end?.classList.contains('active'))return 'EPILOGUE';
+    return 'TITLE';
+  }
+  function toggleMusic(){
+    const next=!(state.audio?.enabled!==false);
+    if(!state.audio)state.audio={enabled:true,volume:.58};
+    state.audio.enabled=next;AudioManager.enabled(next);
+    if(next)AudioManager.play(desiredMusicKey());
+    save();
+  }
 
   // ---------------- EVENTS ----------------
   els.panel.addEventListener('click',advanceStory);els.intertitle.addEventListener('click',advanceStory);
@@ -1143,6 +1230,8 @@
   els.restart.addEventListener('click',()=>{restartConfirm();requestFullscreenSafe()});
   $('#historyBtn').addEventListener('click',openHistory);$('#conceptBtn').addEventListener('click',openConcepts);$('#menuBtn').addEventListener('click',()=>els.menu.showModal());
   $('#menuHistory').addEventListener('click',()=>{els.menu.close();openHistory()});$('#menuConcept').addEventListener('click',()=>{els.menu.close();openConcepts()});$('#menuRestart').addEventListener('click',restartConfirm);
+  els.music?.addEventListener('click',e=>{e.stopPropagation();toggleMusic()});
+  els.menuMusic?.addEventListener('click',()=>toggleMusic());
   els.sound.addEventListener('click',()=>{state.haptics=!state.haptics;save();if(state.haptics)haptic(18)});
   els.specialLayer?.addEventListener('click',continueSpecial);els.specialContinue?.addEventListener('click',e=>{e.stopPropagation();continueSpecial()});
   els.flashbackLayer?.addEventListener('click',e=>{if(!els.flashbackLayer.classList.contains('interactive'))return;e.stopPropagation();continueFlashback()});

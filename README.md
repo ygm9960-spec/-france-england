@@ -23,3 +23,19 @@
 - `images/`
 
 자세한 변경사항은 `CHANGELOG_v0.32.md`를 참고하세요.
+
+## v0.45 Soundtrack
+
+`audio/` 폴더의 사용자 제공 OST 8곡을 실제 게임 흐름에 연결했습니다.
+브라우저 자동재생 정책 때문에 첫 사용자 터치 이후 음악이 시작됩니다. 메인 화면에서 시작 버튼을 누르면 `Le Roi Soleil`이 바로 시작되고 프랑스 장면까지 끊기지 않고 이어집니다.
+
+- 01 `Le Roi Soleil` — 메인 화면 / 프랑스
+- 02 `The Crown Has Rules` — 영국 / 최종 의회
+- 03 `A Crown in a Dream` — 꿈
+- 04 `Words Against the Crown` — 디베이트
+- 05 `Not the King Alone` — 깨달음 / 엔딩
+- 06 `The Sun King Explodes` — SCENE 33
+- 07 `The Passage of Crowns` — 주요 장소·시간·챕터 전환 스팅어
+- 08 `Fronde · A King Remembers` — 프롱드 회상
+
+음악은 약 1초 크로스페이드되며, 전환 스팅어가 재생될 때 기존 BGM은 자동으로 낮아집니다. 메인 화면 및 게임 메뉴에서 BGM을 켜고 끌 수 있습니다.
