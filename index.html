@@ -7,7 +7,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title>태양왕이 여왕이 되었다 · v0.43</title>
+  <title>태양왕이 여왕이 되었다 · v0.46</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -32,8 +32,9 @@
           <button id="restartBtn" class="ghost hidden">처음부터 시작</button>
         </div>
       </div>
-      <div class="version-tag">GAME / EVENT & MUSIC POLISH · v0.43</div>
+      <div class="version-tag">GAME / RESTORE + NEW IMAGE PACK · v0.46</div>
       <button id="fullscreenBtn" class="icon-btn fullscreen-btn" aria-label="전체화면 전환">전체화면</button>
+      <button id="musicBtn" class="icon-btn music-btn" aria-label="배경음악 설정">음악 ON</button>
       <button id="soundBtn" class="icon-btn sound-btn" aria-label="진동 설정">진동 ON</button>
     </section>
 
@@ -64,17 +65,18 @@
         <div id="sunOverlay" class="sun-overlay" aria-hidden="true"><img id="sunEmblemImage" alt=""></div>
       </div>
 
-        <div id="specialLayer" class="special-layer hidden" aria-hidden="true">
-          <img id="specialImage" class="special-image hidden" alt="">
-          <div id="specialShade" class="special-shade"></div>
-          <small id="specialLabel"></small>
-          <button id="specialContinue" class="special-continue hidden" type="button">터치하여 계속 ›</button>
-        </div>
-        <div id="flashbackLayer" class="flashback-layer hidden" aria-hidden="true">
-          <img id="flashbackImage" class="flashback-image hidden" alt="">
-          <div id="flashbackFallback" class="flashback-fallback"></div>
-          <small id="flashbackLabel"></small>
-        </div>
+      <div id="specialLayer" class="special-layer hidden" aria-hidden="true">
+        <img id="specialImage" class="special-image hidden" alt="">
+        <div id="specialShade" class="special-shade"></div>
+        <small id="specialLabel"></small>
+        <button id="specialContinue" class="special-continue hidden" type="button">터치하여 계속 ›</button>
+      </div>
+      <div id="flashbackLayer" class="flashback-layer hidden" aria-hidden="true">
+        <img id="flashbackImage" class="flashback-image hidden" alt="">
+        <div id="flashbackFallback" class="flashback-fallback"></div>
+        <small id="flashbackLabel"></small>
+      </div>
+
       <button id="dialoguePanel" class="dialogue-panel" aria-label="대사창">
         <span id="lineMode" class="line-mode"></span>
         <span id="speakerName" class="speaker"></span>
@@ -174,13 +176,14 @@
     <div class="menu-body">
       <button id="menuHistory" class="menu-wide">지난 대사 보기</button>
       <button id="menuConcept" class="menu-wide">개념 기록 보기</button>
+      <button id="menuMusic" class="menu-wide">배경음악 ON</button>
       <button id="menuFullscreen" class="menu-wide">전체화면으로 보기</button>
       <button id="menuRestart" class="danger">처음부터 다시 시작</button>
     </div>
   </dialog>
 
   <dialog id="teacherDialog" class="teacher-dialog">
-    <div class="dialog-head"><div><small>TEACHER TOOLS · v0.43</small><h2>교사용 테스트</h2></div><button data-close="teacherDialog">닫기</button></div>
+    <div class="dialog-head"><div><small>TEACHER TOOLS · v0.46</small><h2>교사용 테스트</h2></div><button data-close="teacherDialog">닫기</button></div>
     <div id="teacherDebug" class="teacher-debug"></div>
     <div class="teacher-quick">
       <button data-debate-jump="tax">DEBATE 1 테스트</button>
@@ -207,11 +210,10 @@
   <script src="js/directorMap.js"></script>
   <link rel="stylesheet" href="css/presentation.css">
   <link rel="stylesheet" href="css/playerFlowFix.css">
-  <link rel="stylesheet" href="css/mobileViewportFix.css?v=043">
-  <link rel="stylesheet" href="css/v034InteractionFix.css?v=043">
-  <link rel="stylesheet" href="css/v043CinematicFix.css?v=043">
+  <link rel="stylesheet" href="css/mobileViewportFix.css?v=045">
+  <link rel="stylesheet" href="css/v034InteractionFix.css?v=045">
   <script src="js/portraitLayout.js"></script>
   <script src="js/app.js"></script>
-  <script src="js/mobileViewportFix.js?v=043"></script>
+  <script src="js/mobileViewportFix.js?v=045"></script>
 </body>
 </html>

@@ -2,7 +2,7 @@
   'use strict';
   const $=s=>document.querySelector(s);
   const $$=s=>Array.from(document.querySelectorAll(s));
-  const APP_VERSION='v0.43';
+  const APP_VERSION='v0.46';
   const STORAGE_KEY='sun-king-queen-v0.27'; // preserve existing classroom progress
   const LEGACY_KEYS=['sun-king-queen-v0.26','sun-king-queen-v0.25','sun-king-queen-v0.24','sun-king-queen-v0.23','sun-king-queen-v0.22','sun-king-queen-v0.21','sun-king-queen-v0.20','sun-king-queen-v0.19','sun-king-queen-v0.18','sun-king-queen-v0.17','sun-king-queen-v0.16','sun-king-queen-v0.15','sun-king-queen-v0.14','sun-king-queen-v0.13','sun-king-queen-v0.12','sun-king-queen-v0.11','sun-king-queen-v0.10','sun-king-queen-v0.9','sun-king-queen-v0.8','sun-king-queen-v0.7','sun-king-queen-v0.6','sun-king-queen-v0.5','sun-king-queen-v0.4','sun-king-queen-v0.3','sun-king-queen-v0.2'];
   const TOTAL_BULLETS=LOGIC_BULLETS.length;
@@ -12,14 +12,14 @@
     title:$('#titleScreen'),story:$('#storyScreen'),debate:$('#debateScreen'),end:$('#endScreen')
   };
   const els={
-    continue:$('#continueBtn'),start:$('#startBtn'),restart:$('#restartBtn'),sound:$('#soundBtn'),
+    continue:$('#continueBtn'),start:$('#startBtn'),restart:$('#restartBtn'),music:$('#musicBtn'),sound:$('#soundBtn'),
     chapter:$('#chapterLabel'),scene:$('#sceneLabel'),progress:$('#progressBar'),stage:$('#stage'),sceneBackground:$('#sceneBackground'),place:$('#placeCard'),
     actorLayer:$('#actorLayer'),panel:$('#dialoguePanel'),lineMode:$('#lineMode'),speaker:$('#speakerName'),text:$('#dialogueText'),hint:$('#nextHint'),
     sun:$('#sunOverlay'),finalBulletBadge:$('#finalBulletBadge'),
     intertitle:$('#intertitleOverlay'),interKicker:$('#intertitleKicker'),interTitle:$('#intertitleTitle'),interSub:$('#intertitleSubtitle'),
     debateNumber:$('#debateNumber'),debateTopic:$('#debateTopic'),count:$('#bulletCount'),arena:$('#debateArena'),rail:$('#statementRail'),statement:$('#statementText'),debatePrompt:$('#debatePrompt'),aim:$('#aimPulse'),impact:$('#impactText'),deck:$('#bulletDeck'),
     rebuttal:$('#debateRebuttal'),rebuttalLabel:$('#rebuttalLabel'),rebuttalTitle:$('#rebuttalTitle'),rebuttalLogic:$('#rebuttalLogic'),rebuttalText:$('#rebuttalText'),rebuttalNext:$('#rebuttalNext'),
-    history:$('#historyDialog'),historyList:$('#historyList'),concept:$('#conceptDialog'),conceptList:$('#conceptList'),menu:$('#menuDialog'),
+    history:$('#historyDialog'),historyList:$('#historyList'),concept:$('#conceptDialog'),conceptList:$('#conceptList'),menu:$('#menuDialog'),menuMusic:$('#menuMusic'),
     teacher:$('#teacherDialog'),teacherNav:$('#teacherNav'),teacherDebug:$('#teacherDebug'),teacherPreviewBadge:$('#teacherPreviewBadge'),
     teacherExitPreview:$('#teacherExitPreview'),teacherCacheRefresh:$('#teacherCacheRefresh'),
     propLayer:$('#propLayer'),propCard:$('#propCard'),propImage:$('#propImage'),propFallback:$('#propFallback'),
@@ -43,8 +43,7 @@
   let beforeBeatKey=null,afterBeatKey=null;
   let teacherFastMode=false;
   let finalLockScenePlayed=null;
-  let specialTimer=null,specialReadyTimer=null,specialDone=null,specialReady=false;
-  let titleMusicStarted=false;
+  let specialTimer=null,specialReadyTimer=null,specialDone=null,specialReady=false,flashbackDone=null;
   let openingTimerA=null,openingTimerB=null,conceptToastTimer=null,propHideTimer=null,propExitTimer=null,propReleaseTimer=null,actionBeatTimerA=null,actionBeatTimerB=null,sceneEntryTimer=null,sceneExitTimer=null,pendingSceneEntryHold=0,debateReadTimer=null,debateReadKey=null,debateReadLocked=false,debateExitTimer=null;
   let lastStoryInputAt=0;
   const assetPreloadCache=new Map();
@@ -105,7 +104,7 @@
     try{localStorage.removeItem(STORAGE_KEY);LEGACY_KEYS.forEach(k=>localStorage.removeItem(k))}catch{}
   }
   function reset(){
-    clearTyping();clearDirectionTimer();clearSpecialState();clearOpeningNarration();hidePersistentSceneVisual();hidePinnedSceneDoc();screens.story?.classList.remove('ending-fade','opening-black','unknown-voice-mode','eye-opening','event-backdrop-mode');els.sceneFadeOverlay?.classList.add('hidden');hideConceptToast();clearActionBeat();hideProp({immediate:true});clearDebateReadWindow();if(propReleaseTimer)clearTimeout(propReleaseTimer);propReleaseTimer=null;if(sceneEntryTimer)clearTimeout(sceneEntryTimer);if(sceneExitTimer)clearTimeout(sceneExitTimer);if(debateExitTimer)clearTimeout(debateExitTimer);sceneEntryTimer=null;sceneExitTimer=null;debateExitTimer=null;pendingSceneEntryHold=0;
+    clearTyping();clearDirectionTimer();clearSpecialState();clearOpeningNarration();hidePersistentSceneVisual();hidePinnedSceneDoc();screens.story?.classList.remove('ending-fade','opening-black','unknown-voice-mode','eye-opening','event-backdrop-mode','dream-memory-mode');els.sceneFadeOverlay?.classList.add('hidden');hideConceptToast();clearActionBeat();hideProp({immediate:true});clearDebateReadWindow();if(propReleaseTimer)clearTimeout(propReleaseTimer);propReleaseTimer=null;if(sceneEntryTimer)clearTimeout(sceneEntryTimer);if(sceneExitTimer)clearTimeout(sceneExitTimer);if(debateExitTimer)clearTimeout(debateExitTimer);sceneEntryTimer=null;sceneExitTimer=null;debateExitTimer=null;pendingSceneEntryHold=0;
     if(!teacherPreviewMode)clearPersistent();
     const keepHaptics=state?.haptics!==false;const keepAudio=clone(state?.audio||{enabled:true,volume:.58});
     AudioManager?.stopAll?.();state=baseState();state.haptics=keepHaptics;state.audio=keepAudio;busy=false;beforeBeatKey=null;afterBeatKey=null;updateTitle();
@@ -128,7 +127,7 @@
     const t=String(line?.text||'');
     if(!isKeyLine(t))return null;
     if(t.includes('그리고 영국은 왕도 처형했습니다.'))return {before:420,after:1250};
-    if(t.includes('그건 프랑스입니다.'))return null; // Express the rebuttal immediately, without an awkward empty pause.
+    if(t.includes('그건 프랑스입니다.'))return null;
     if(t.includes('짐이 곧 국가다!'))return {before:300,after:760};
     if(t.includes('짐은 태양이다!'))return {before:280,after:520};
     if(t.includes('국가는 왕 한 사람보다 큽니다.'))return {before:320,after:650};
@@ -185,20 +184,31 @@
     els.conceptToast.classList.add('show');conceptToastTimer=setTimeout(()=>hideConceptToast(),qaDelay(1300));
   }
 
-  // v0.41 cinematic scene helpers --------------------------------------
-  function backdropArtFor(scene,index){
-    if(scene?.id==='scene-28'&&index>=2&&index<=7)return 'dream_crown_offer';
-    if(scene?.id==='scene-40'&&index>=2&&index<=3)return 'mirror_return';
-    return null;
+  // v0.43 persistent event-scene grammar -------------------------------------
+  // Event illustrations are not disposable cutaways. Once an event image arrives,
+  // it becomes the scene background while the following dialogue/narration plays.
+  const EVENT_BACKDROP_RANGES={
+    'scene-02':{start:6,end:9,key:'young_louis_fronde'},
+    'scene-20':{start:4,end:11,key:'charles_door_flash'},
+    'scene-28':{start:2,end:7,key:'dream_crown_offer'},
+    'scene-32':{start:5,end:9,key:'charles_door_flash'},
+    'scene-36':{start:10,end:15,key:'realization_montage'},
+    'scene-40':{start:2,end:3,key:'mirror_return'}
+  };
+  const EVENT_BACKDROP_KEYS=new Set(Object.values(EVENT_BACKDROP_RANGES).map(v=>v.key));
+  function backdropEventFor(scene,index){
+    const cfg=scene?EVENT_BACKDROP_RANGES[scene.id]:null;
+    return cfg&&index>=cfg.start&&index<=cfg.end?cfg:null;
   }
   function syncBackdropEventMode(){
-    const art=backdropArtFor(currentScene(),state.lineIndex);
-    screens.story?.classList.toggle('event-backdrop-mode',!!art);
-    if(art){
-      if(els.persistentSceneLayer?.dataset?.memoryKind!==art||els.persistentSceneLayer.classList.contains('hidden'))showPersistentSceneVisual(art);
-      hideProp({immediate:true});hidePinnedSceneDoc();hideFlashback();
-    }else if(!els.persistentSceneLayer?.classList.contains('hidden')){
-      hidePersistentSceneVisual();
+    const scene=currentScene(),cfg=backdropEventFor(scene,state.lineIndex),active=!!cfg;
+    screens.story?.classList.toggle('event-backdrop-mode',active);
+    if(active){
+      if(els.persistentSceneLayer?.dataset?.memoryKind!==cfg.key||els.persistentSceneLayer.classList.contains('hidden'))showPersistentSceneVisual(cfg.key);
+      hideSpecial();hideProp({immediate:true});hidePinnedSceneDoc();hideFlashback();
+    }else{
+      const kind=els.persistentSceneLayer?.dataset?.memoryKind;
+      if(kind&&EVENT_BACKDROP_KEYS.has(kind))hidePersistentSceneVisual();
     }
   }
   function transitionLabelFor(from,to){
@@ -210,17 +220,26 @@
     if(time)return time.replace(/\s+/g,' ');
     return placeChanged?place:'';
   }
+  function shouldPlayPassage(from,to){
+    if(!from||!to)return false;
+    const label=transitionLabelFor(from,to);
+    const chapterChanged=from.chapter!==to.chapter;
+    const countryChanged=from.country!==to.country;
+    const timeShift=/그날|다음|새벽|아침|오전|오후|저녁|밤|며칠/.test(label||String(to.title||''));
+    return chapterChanged||countryChanged||timeShift;
+  }
   function runSceneFade(from,to,onBlack){
     const overlay=els.sceneFadeOverlay,labelEl=els.sceneFadeLabel;
     if(!overlay||teacherPreviewMode&&teacherFastMode){onBlack();return;}
     const label=transitionLabelFor(from,to);
     if(labelEl)labelEl.textContent=label;
+    if(shouldPlayPassage(from,to))AudioManager?.stinger?.('PASSAGE');
     overlay.classList.remove('hidden','fade-out');
     overlay.setAttribute('aria-hidden','false');
     requestAnimationFrame(()=>requestAnimationFrame(()=>overlay.classList.add('active')));
-    setTimeout(()=>{onBlack();},qaDelay(300));
-    setTimeout(()=>overlay.classList.add('fade-out'),qaDelay(470));
-    setTimeout(()=>{overlay.classList.remove('active','fade-out');overlay.classList.add('hidden');overlay.setAttribute('aria-hidden','true')},qaDelay(820));
+    setTimeout(()=>{onBlack();},qaDelay(680));
+    setTimeout(()=>overlay.classList.add('fade-out'),qaDelay(1680));
+    setTimeout(()=>{overlay.classList.remove('active','fade-out');overlay.classList.add('hidden');overlay.setAttribute('aria-hidden','true')},qaDelay(2380));
   }
 
   // v0.25 DETAIL PASS ----------------------------------------------------
@@ -239,7 +258,6 @@
     'scene-32':[{start:0,end:9,key:'bill_of_rights'}],
     'scene-33':[{start:0,end:7,key:'bill_of_rights'}],
     'scene-34':[{start:0,end:10,key:'bill_of_rights'}],
-    // Scene 36: omit pinned props; they overlapped the dialogue box at its top-right.
     'scene-37':[{start:0,end:0,key:'crown'}]
   };
   function persistentPropFor(sceneId,index){
@@ -278,33 +296,85 @@
   const AudioManager=(()=>{
     const channels=[new Audio(),new Audio()];
     channels.forEach(a=>{a.loop=true;a.preload='auto'});
-    let active=0,currentKey=null,unlocked=false,fadeToken=0;
-    function unlock(){unlocked=true}
-    function setVolume(v){state.audio.volume=Math.max(0,Math.min(1,Number(v)||0));channels.forEach(a=>a.volume=Math.min(a.volume,state.audio.volume))}
-    function stopAll(){fadeToken++;channels.forEach(a=>{try{a.pause();a.currentTime=0}catch{}});currentKey=null}
-    function play(key){
-      const cfg=AUDIO_MAP?.bgm?.[key];const path=cfg?.path;
-      if(!state.audio.enabled||!path){stopAll();currentKey=key;return}
-      if(!unlocked){currentKey=key;return}
-      if(currentKey===key&&!channels[active].paused)return;
-      currentKey=key;const next=1-active,from=channels[active],to=channels[next];const token=++fadeToken;
-      try{to.src=path;to.loop=true;to.currentTime=0;to.volume=0;to.play().catch(()=>{})}catch{return}
-      const target=Math.min(1,(cfg.volume??1)*state.audio.volume);const start=performance.now(),dur=teacherFastMode?80:900;
-      const step=now=>{if(token!==fadeToken)return;const t=Math.min(1,(now-start)/dur);to.volume=target*t;from.volume=Math.max(0,(1-t)*Math.min(from.volume||target,target));if(t<1)requestAnimationFrame(step);else{try{from.pause()}catch{}active=next}};
+    const sting=new Audio();sting.loop=false;sting.preload='auto';
+    let active=0,currentKey=null,unlocked=false,fadeToken=0,stingerToken=0,duck=1;
+    function cfgFor(key){return AUDIO_MAP?.bgm?.[key]||null}
+    function targetFor(key){const cfg=cfgFor(key);return state.audio.enabled&&cfg?Math.min(1,(cfg.volume??1)*state.audio.volume*duck):0}
+    function rampVolume(audio,target,dur=420,tokenGuard=null){
+      const startVol=Number(audio.volume)||0,start=performance.now();
+      const token=tokenGuard;
+      const step=now=>{if(token&&token()===false)return;const x=Math.min(1,(now-start)/Math.max(1,dur));audio.volume=startVol+(target-startVol)*x;if(x<1)requestAnimationFrame(step)};
       requestAnimationFrame(step);
     }
+    function unlock(){unlocked=true}
+    function setVolume(v){
+      state.audio.volume=Math.max(0,Math.min(1,Number(v)||0));
+      if(currentKey&&!channels[active].paused)rampVolume(channels[active],targetFor(currentKey),260);
+    }
+    function stopAll(){
+      fadeToken++;stingerToken++;channels.forEach(a=>{try{a.pause();a.currentTime=0;a.volume=0}catch{}});
+      try{sting.pause();sting.currentTime=0;sting.volume=0}catch{}
+      currentKey=null;duck=1;channels.forEach(a=>{a._bgmPath=''})
+    }
+    function play(key){
+      const cfg=cfgFor(key),path=cfg?.path;
+      currentKey=key;
+      if(!state.audio.enabled||!unlocked||!path)return;
+      const from=channels[active],pending=channels[1-active];
+      // TITLE and FRANCE intentionally share the same recording: keep playing without a restart.
+      // Also cancel an in-progress crossfade if the player quickly returns to the current theme.
+      if(from._bgmPath===path&&!from.paused){
+        const keepToken=++fadeToken;
+        rampVolume(from,targetFor(key),320);
+        if(!pending.paused){rampVolume(pending,0,260);setTimeout(()=>{if(keepToken!==fadeToken)return;try{pending.pause();pending.currentTime=0}catch{}},280)}
+        return;
+      }
+      // If the requested track is already fading in on the other channel, do not restart it.
+      if(pending._bgmPath===path&&!pending.paused)return;
+      const next=1-active,to=channels[next],token=++fadeToken;
+      const target=targetFor(key);
+      try{
+        to.src=path;to._bgmPath=path;to.loop=true;to.currentTime=0;to.volume=0;
+        const pr=to.play();
+        if(pr&&pr.catch)pr.catch(()=>{
+          // Some mobile browsers only allow the audio element first activated by a user gesture.
+          // Fall back to switching the already-active element so music still continues.
+          if(token!==fadeToken)return;
+          try{from.pause();from.src=path;from._bgmPath=path;from.loop=true;from.currentTime=0;from.volume=target;const retry=from.play();if(retry&&retry.catch)retry.catch(()=>{});}catch{}
+        });
+      }catch{return}
+      const start=performance.now(),dur=teacherFastMode?80:1050,fromStart=Number(from.volume)||0;
+      const step=now=>{if(token!==fadeToken)return;const x=Math.min(1,(now-start)/dur);to.volume=target*x;from.volume=Math.max(0,fromStart*(1-x));if(x<1)requestAnimationFrame(step);else{try{from.pause();from.currentTime=0}catch{}active=next}};
+      requestAnimationFrame(step);
+    }
+    function stinger(key){
+      const cfg=AUDIO_MAP?.stingers?.[key];if(!state.audio.enabled||!unlocked||!cfg?.path)return;
+      const token=++stingerToken,maxMs=Math.max(1800,Number(cfg.maxMs)||6500);
+      try{sting.pause();sting.src=cfg.path;sting.currentTime=0;sting.volume=0}catch{}
+      duck=.42;
+      if(currentKey&&!channels[active].paused)rampVolume(channels[active],targetFor(currentKey),360);
+      try{const pr=sting.play();if(pr&&pr.catch)pr.catch(()=>{})}catch{}
+      const peak=Math.min(1,(cfg.volume??1)*state.audio.volume);
+      rampVolume(sting,peak,420,()=>token===stingerToken);
+      const finish=()=>{
+        if(token!==stingerToken)return;
+        rampVolume(sting,0,600,()=>token===stingerToken);
+        setTimeout(()=>{if(token!==stingerToken)return;try{sting.pause();sting.currentTime=0}catch{}duck=1;if(currentKey&&!channels[active].paused)rampVolume(channels[active],targetFor(currentKey),700)},620);
+      };
+      setTimeout(finish,teacherFastMode?180:maxMs);
+    }
     function sfx(key){const cfg=AUDIO_MAP?.sfx?.[key];if(!state.audio.enabled||!unlocked||!cfg?.path)return;try{const a=new Audio(cfg.path);a.volume=Math.min(1,(cfg.volume??1)*state.audio.volume);a.play().catch(()=>{})}catch{}}
-    return {unlock,play,sfx,stopAll,setVolume};
+    function enabled(v){
+      state.audio.enabled=!!v;
+      if(!state.audio.enabled){stopAll();return}
+      unlock();
+    }
+    return {unlock,play,stinger,sfx,stopAll,setVolume,enabled,get currentKey(){return currentKey}};
   })();
-  document.addEventListener('pointerdown',()=>AudioManager.unlock(),{once:true,capture:true});
-  // First interaction anywhere on the title art unlocks and starts music.
-  // Do not defer until the Story Start button; mobile audio needs a real gesture.
-  function startTitleMusic(){
-    if(titleMusicStarted||!screens.title.classList.contains('active'))return;
-    titleMusicStarted=true;AudioManager.unlock();AudioManager.play('TITLE');
-  }
-  screens.title.addEventListener('pointerdown',startTitleMusic,{capture:true,passive:true});
-  screens.title.addEventListener('click',startTitleMusic,{capture:true});
+  document.addEventListener('pointerdown',()=>{
+    AudioManager.unlock();
+    if(screens.title?.classList.contains('active')&&state.audio.enabled)AudioManager.play('TITLE');
+  },{once:true,capture:true});
   function show(name){Object.values(screens).forEach(s=>s.classList.remove('active'));screens[name].classList.add('active')}
   function escapeHtml(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
   function currentScene(){return STORY_DATA[state.sceneIndex]}
@@ -331,6 +401,8 @@
     els.restart.classList.toggle('hidden',!has);
     els.start.classList.toggle('hidden',has);
     els.start.textContent=state.endingSeen?'다시 시작':'이야기 시작';
+    if(els.music)els.music.textContent=`음악 ${state.audio?.enabled!==false?'ON':'OFF'}`;
+    if(els.menuMusic)els.menuMusic.textContent=`배경음악 ${state.audio?.enabled!==false?'ON':'OFF'}`;
     els.sound.textContent=`진동 ${state.haptics?'ON':'OFF'}`;
   }
   function applyStaticArt(){
@@ -344,7 +416,7 @@
   function clearTyping(){if(typing?.timer)clearTimeout(typing.timer);typing=null}
   function clearDirectionTimer(){if(directionTimer)clearTimeout(directionTimer);directionTimer=null}
   const STORY_EMPHASIS_TERMS=[
-    '짐이 곧 국가다!','짐은 태양이다!','국가는 왕 한 사람보다 큽니다.','하늘 없이 혼자 뜨는 것은 아니었군.',
+    '영국에서 왕은 군림하되 통치하지 않는다.','짐이 곧 국가다!','짐은 태양이다!','국가는 왕 한 사람보다 큽니다.','하늘 없이 혼자 뜨는 것은 아니었군.',
     '왕권신수설','권리장전','관료제','상비군','파리 고등법원','의회','세금','왕권','왕관','전쟁','베르사유 궁전'
   ].sort((a,b)=>b.length-a.length);
   const STORY_EMPHASIS_RE=new RegExp(`(${STORY_EMPHASIS_TERMS.map(v=>v.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|')})`,'g');
@@ -352,7 +424,7 @@
     const raw=String(text).slice(0,limit);
     return raw.split(STORY_EMPHASIS_RE).map(part=>STORY_EMPHASIS_TERMS.includes(part)?`<span class=\"story-emphasis\">${escapeHtml(part)}</span>`:escapeHtml(part)).join('').replace(/\n/g,'<br>');
   }
-  const KEY_LINE_SNIPPETS=['애송이 앤','의회를 소집하라!','짐은 태양이다!','짐이 곧 국가다!','그건 프랑스입니다.','국가는 왕 한 사람보다 큽니다.','태양도…','하늘 없이 혼자 뜨는 것은 아니었군.'];
+  const KEY_LINE_SNIPPETS=['애송이 앤','의회를 소집하라!','영국에서 왕은 군림하되 통치하지 않는다.','짐은 태양이다!','짐이 곧 국가다!','그건 프랑스입니다.','국가는 왕 한 사람보다 큽니다.','태양도…','하늘 없이 혼자 뜨는 것은 아니었군.'];
   function isKeyLine(text){const t=String(text||'');return KEY_LINE_SNIPPETS.some(v=>t.includes(v))}
   function typeDelayFor(text){const t=String(text||'');if(isKeyLine(t))return 44;if(t.length>=95)return 24;if(t.length>=70)return 27;if(t.length>=45)return 30;return 34}
   function typeText(text,{instant=false,speed=1}={}){
@@ -597,9 +669,7 @@
     if(!persistent)propHideTimer=setTimeout(()=>hideProp({immediate:true}),qaDelay(hold));
   }
   function syncPersistentProp(){
-    const s=currentScene();
-    if(s?.id==='scene-36'||backdropArtFor(s,state.lineIndex)){hideProp({immediate:true});return}
-    const range=s?persistentPropFor(s.id,state.lineIndex):null;
+    const s=currentScene(),range=s?persistentPropFor(s.id,state.lineIndex):null;
     if(range){if(propReleaseTimer)clearTimeout(propReleaseTimer);propReleaseTimer=null;showProp(range.key,{persistent:true});return}
     if(els.propLayer?.classList.contains('prop-exiting'))return;
     if(els.propLayer?.classList.contains('prop-persistent')&&!propReleaseTimer){
@@ -617,8 +687,7 @@
   function hideSpecial(){clearSpecialState()}
   function showSpecialImage(key,duration=1200,options={}){
     const meta=resolveSpecialMeta?.(key);if(!meta?.path||!els.specialLayer)return false;clearSpecialTimers();specialDone=null;specialReady=false;
-    const interactive=!!options.interactive&&!(teacherPreviewMode&&teacherFastMode);
-    els.specialLayer.dataset.eventKey=key;
+    const interactive=!!options.interactive&&!matchMedia('(prefers-reduced-motion: reduce)').matches&&!(teacherPreviewMode&&teacherFastMode);
     els.specialLabel.textContent=meta.label||'';els.specialLayer.style.setProperty('--special-duration',`${Math.max(500,duration)}ms`);els.specialLayer.classList.remove('hidden','ready');els.specialLayer.classList.toggle('interactive',interactive);els.specialLayer.setAttribute('aria-hidden','false');
     if(els.specialContinue)els.specialContinue.classList.add('hidden');els.specialImage.classList.add('hidden');setResilientImage(els.specialImage,meta.path,{onLoad:()=>els.specialImage.classList.remove('hidden'),onError:()=>{const done=options.onContinue;hideSpecial();if(typeof done==='function')done()}});
     if(interactive){specialDone=typeof options.onContinue==='function'?options.onContinue:null;specialReadyTimer=setTimeout(()=>{specialReady=true;els.specialLayer.classList.add('ready');els.specialContinue?.classList.remove('hidden')},qaDelay(options.minHold||900))}
@@ -626,19 +695,37 @@
     return true
   }
   function continueSpecial(){if(!specialReady||!specialDone)return;const done=specialDone;specialDone=null;specialReady=false;hideSpecial();haptic(6);done()}
-  function hideFlashback(){els.flashbackLayer?.classList.add('hidden');els.flashbackImage?.classList.add('hidden');if(els.flashbackImage)els.flashbackImage.removeAttribute('src')}
+  function hideFlashback(){
+    flashbackDone=null;
+    els.flashbackLayer?.classList.add('hidden');
+    els.flashbackLayer?.classList.remove('interactive');
+    els.flashbackLayer?.setAttribute('aria-hidden','true');
+    els.flashbackImage?.classList.add('hidden');
+    if(els.flashbackImage)els.flashbackImage.removeAttribute('src');
+  }
   function showOverlayImage(path,label='',fallback='',datasetActor='overlay',duration=900){
     if(!els.flashbackLayer)return;
+    hideFlashback();
     els.flashbackLabel.textContent=label||'';
     els.flashbackFallback.textContent=fallback||label||'';
     els.flashbackFallback.classList.toggle('hidden',!!path);
-    els.flashbackLayer.classList.remove('hidden');els.flashbackLayer.dataset.actor=datasetActor;
+    els.flashbackLayer.classList.remove('hidden');els.flashbackLayer.setAttribute('aria-hidden','false');els.flashbackLayer.dataset.actor=datasetActor;
     if(path){setResilientImage(els.flashbackImage,path,{onLoad:()=>{els.flashbackImage.classList.remove('hidden');els.flashbackFallback.classList.add('hidden')},onError:()=>{els.flashbackImage.classList.add('hidden');els.flashbackFallback.classList.remove('hidden')}})}
     if(duration>0)setTimeout(hideFlashback,qaDelay(duration));
   }
   function showFlashback(actorId,label='',duration=900){
     const def=ACTOR_DEFS?.[actorId];
     showOverlayImage(resolveActorAsset?.(actorId,'default'),label||def?.code||'',def?.name||label||actorId,actorId,duration);
+  }
+  function showInteractiveFlashback(actorId,label='',onContinue=null){
+    const def=ACTOR_DEFS?.[actorId];
+    showOverlayImage(resolveActorAsset?.(actorId,'default'),label||def?.code||'',def?.name||label||actorId,actorId,0);
+    flashbackDone=typeof onContinue==='function'?onContinue:null;
+    els.flashbackLayer?.classList.add('interactive');
+  }
+  function continueFlashback(){
+    if(!flashbackDone)return;
+    const done=flashbackDone;flashbackDone=null;hideFlashback();haptic(6);done();
   }
   function playFinalLockIntro(scene){
     if(!els.finalLockFx||scene.id!=='scene-30'||finalLockScenePlayed===scene.id)return;
@@ -666,7 +753,8 @@
     if(!s)return finishStory();
     clearOpeningNarration();screens.story.classList.remove('ending-fade','unknown-voice-mode','event-backdrop-mode');els.stage.style.opacity='1';els.actorLayer?.classList.remove('solo-focus');
     screens.story.dataset.chapterType=s.chapter==='FINAL'?'final':s.chapter==='REALIZATION'?'realization':s.chapter==='EPILOGUE'?'epilogue':String(s.chapter||'').includes('MEMORY')?'memory':'story';
-    if(s.id!=='scene-02')hidePersistentSceneVisual();
+    screens.story.classList.toggle('dream-memory-mode',s.tone==='dream');
+    hidePersistentSceneVisual();
     if(s.id==='scene-04')showPinnedSceneDoc('anne_accession','앤 여왕 즉위 보고서');else hidePinnedSceneDoc();
     els.chapter.textContent=s.chapter;
     els.scene.textContent=`SCENE ${String(s.number).padStart(2,'0')} · ${s.title}`;
@@ -674,7 +762,7 @@
     const uiTone=s.chapter==='FINAL'?'final':s.chapter==='REALIZATION'?'realization':s.chapter==='EPILOGUE'?'epilogue':(s.tone==='dream'||String(s.chapter||'').includes('MEMORY'))?'memory':s.country==='FRANCE'?'france':'england';
     screens.story.dataset.uiTone=uiTone;
     els.place.innerHTML=`<small>${escapeHtml(s.country)}</small><strong>${escapeHtml(s.place)}</strong>`;
-    renderStageActors(s);applySceneAsset(s);applySceneVisual(s);preloadSceneAssets(state.sceneIndex);AudioManager.play(sceneBgmKey?.(s)||'ENGLAND');
+    renderStageActors(s);applySceneAsset(s);applySceneVisual(s);preloadSceneAssets(state.sceneIndex);AudioManager.play(sceneBgmKey?.(s,state.lineIndex)||'ENGLAND');
     els.stage.dataset.camera='default';delete els.actorLayer.dataset.shotPhase;
     if(s.chapter!=='FINAL')els.stage.classList.remove('sun-active');
     els.finalBulletBadge.classList.toggle('hidden',s.chapter!=='FINAL');
@@ -684,8 +772,8 @@
     let entryHold=pendingSceneEntryHold;pendingSceneEntryHold=0;
     if(s.id==='scene-06'&&state.lineIndex===0&&!(teacherPreviewMode&&teacherFastMode)){
       screens.story.classList.remove('eye-opening');void screens.story.offsetWidth;screens.story.classList.add('eye-opening');
-      setTimeout(()=>screens.story.classList.remove('eye-opening'),qaDelay(1750));
-      entryHold=Math.max(entryHold,1550);
+      setTimeout(()=>screens.story.classList.remove('eye-opening'),qaDelay(3050));
+      entryHold=Math.max(entryHold,2850);
     }else screens.story.classList.remove('eye-opening');
     if(entryHold>0&&!(teacherPreviewMode&&teacherFastMode)){
       clearTyping();els.panel.classList.add('hidden');els.intertitle.classList.add('hidden');busy=true;if(sceneEntryTimer)clearTimeout(sceneEntryTimer);
@@ -695,7 +783,7 @@
 
   function applyMappedVisual(effect){
     const cfg=VISUAL_MAP?.[effect];if(!cfg)return false;
-    if(cfg.flashbackActor)showFlashback(cfg.flashbackActor,cfg.flashbackLabel,0);
+    if(cfg.flashbackActor)showFlashback(cfg.flashbackActor,cfg.flashbackLabel,cfg.duration||900);
     return true;
   }
   function triggerEffect(effect,meta={}){
@@ -706,11 +794,11 @@
       case 'fade_black':if(currentScene()?.id==='scene-40'){screens.story.classList.add('ending-fade');els.stage.style.opacity='0'}break;
       case 'flash_white':break;
       case 'dark_pulse':break;
-      case 'seal':if(backdropArtFor(currentScene(),state.lineIndex))break;{const k=propForCurrentLine('seal')||'dream_red_seal',r=persistentPropFor(currentScene()?.id,state.lineIndex);showProp(k,{hold:1350,persistent:r?.key===k});}AudioManager.sfx('SEAL');break;
+      case 'seal':{const k=propForCurrentLine('seal')||'dream_red_seal',r=persistentPropFor(currentScene()?.id,state.lineIndex);showProp(k,{hold:1350,persistent:r?.key===k});}AudioManager.sfx('SEAL');break;
       case 'document':{const k=propForCurrentLine('document')||'bill_of_rights',r=persistentPropFor(currentScene()?.id,state.lineIndex);showProp(k,{hold:1450,persistent:r?.key===k});}AudioManager.sfx('PAGE');break;
-      case 'show_prop':if(currentScene()?.id==='scene-36'||backdropArtFor(currentScene(),state.lineIndex))break;if(meta.propKey){if(currentScene()?.id==='scene-04'&&meta.propKey==='anne_accession')showPinnedSceneDoc('anne_accession','앤 여왕 즉위 보고서');else{const r=persistentPropFor(currentScene()?.id,state.lineIndex);showProp(meta.propKey,{hold:meta.propHold||1500,persistent:r?.key===meta.propKey})}}break;
-      case 'flashback_history':break; // flashback already displayed via VISUAL_MAP until the next dialogue tap
-      case 'charles_flash':if(!showSpecialImage('charles_door_flash',980))showFlashback('charles1','CHARLES I',900);break;
+      case 'show_prop':if(meta.propKey){if(currentScene()?.id==='scene-04'&&meta.propKey==='anne_accession')showPinnedSceneDoc('anne_accession','앤 여왕 즉위 보고서');else{const r=persistentPropFor(currentScene()?.id,state.lineIndex);showProp(meta.propKey,{hold:meta.propHold||1500,persistent:r?.key===meta.propKey})}}break;
+      case 'flashback_history':showFlashback('louis14','과거의 루이',980);break;
+      case 'charles_flash':{const cfg=backdropEventFor(currentScene(),state.lineIndex);if(cfg){showPersistentSceneVisual(cfg.key);screens.story.classList.add('event-backdrop-mode');hideProp({immediate:true});hidePinnedSceneDoc();}else if(!showSpecialImage('charles_door_flash',980))showFlashback('charles1','CHARLES I',900);}break;
       case 'charles_reveal':break;
       case 'throat_clear':AudioManager.sfx('THROAT');break;
       case 'summon_parliament':AudioManager.sfx('SUMMON');break;
@@ -745,7 +833,7 @@
   }
 
   function renderVisibleLine(line,skipBeat=false){
-    const cue=currentCue(),key=lineKey(),quiet=keyQuietTiming(line),instantRebuttal=String(line?.text||'').includes('그건 프랑스입니다.'),beatBefore=instantRebuttal?0:Math.max(cue?.beatBefore||0,quiet?.before||0);
+    const cue=currentCue(),key=lineKey(),quiet=keyQuietTiming(line),beatBefore=Math.max(cue?.beatBefore||0,quiet?.before||0);
     const unknownVoice=line.type==='dialogue'&&(line.speaker==='???'||line.actorId==='unknown');
     screens.story.classList.toggle('unknown-voice-mode',unknownVoice);
     if(!skipBeat&&beatBefore&&beforeBeatKey!==key){
@@ -758,7 +846,7 @@
     const tier=narrationTier(line),actionNarration=tier==='action',atmosphereNarration=tier==='atmosphere',historyNarration=tier==='history';
     const soloFocus=line.type==='monologue'||(currentScene()?.id==='scene-01'&&line.actorId==='louis14'&&state.lineIndex>=4&&state.lineIndex<=10);
     els.actorLayer?.classList.toggle('solo-focus',soloFocus);
-    els.panel.classList.remove('hidden','narration','monologue','narration-action','narration-context','narration-atmosphere','narration-history','key-silence','summon-line');
+    els.panel.classList.remove('hidden','narration','monologue','narration-action','narration-context','narration-atmosphere','narration-history','key-silence','summon-line','emotion-line','reverse-impact-line','constitutional-line');
     els.panel.classList.toggle('narration',line.type==='narration');
     els.panel.classList.toggle('monologue',line.type==='monologue');
     els.panel.classList.toggle('narration-action',actionNarration);
@@ -770,12 +858,12 @@
     els.speaker.textContent=line.type==='narration'?'':(line.speaker||'');
     const group=line.type==='narration'?'narration':line.type==='monologue'?'monologue':(ACTOR_DEFS?.[line.actorId]?.group||'neutral');
     syncActorPresence(currentScene());
-    els.panel.dataset.speakerGroup=group;els.panel.classList.toggle('long-line',String(line.text||'').length>=72);els.panel.classList.toggle('key-line',isKeyLine(line.text));
-    els.panel.classList.toggle('summon-line',/의회를\s*소집하라/.test(String(line.text||'')));
-    els.panel.classList.remove('emphasis-impact');
-    if(line.type==='dialogue'&&(/!|！/.test(line.text||'')||String(line.text||'').includes('그건 프랑스입니다.'))){
-      void els.panel.offsetWidth;els.panel.classList.add('emphasis-impact');
-    }
+    const spokenText=String(line.text||''),keyLine=isKeyLine(spokenText),emotionLine=line.type==='dialogue'&&(spokenText.length<=48&&(keyLine||/[!！]/.test(spokenText)));
+    els.panel.dataset.speakerGroup=group;els.panel.classList.toggle('long-line',spokenText.length>=72);els.panel.classList.toggle('key-line',keyLine);
+    els.panel.classList.toggle('emotion-line',emotionLine);
+    els.panel.classList.toggle('reverse-impact-line',spokenText.includes('그건 프랑스입니다.'));
+    els.panel.classList.toggle('constitutional-line',spokenText.includes('영국에서 왕은 군림하되 통치하지 않는다.'));
+    els.panel.classList.toggle('summon-line',/의회를\s*소집하라/.test(spokenText));
     applyDirectorContext(cue,line);
     requestAnimationFrame(()=>layoutPortraits());
     const effect=cue?.effect||line.effect;if(effect)triggerEffect(effect,Object.assign({},line,cue||{}));
@@ -808,17 +896,22 @@
 
   function executeDirection(line){
     delete els.actorLayer.dataset.shotPhase;els.actorLayer?.classList.remove('solo-focus');const cue=currentCue(),scene=currentScene(),special=SPECIAL_CUE_MAP?.[`${scene?.id}:${state.lineIndex}`]||null;clearTyping();activateActor(cue?.focus||null);els.panel.classList.add('hidden');els.intertitle.classList.add('hidden');applyDirectorContext(cue,line);
-    if(!special?.suppressEffect)triggerEffect(cue?.effect||line.effect,Object.assign({},line,cue||{}));updateProgress();save();busy=true;clearDirectionTimer();
+    const resolvedEffect=cue?.effect||line.effect;updateProgress();save();busy=true;clearDirectionTimer();
     const finishDirection=()=>{busy=false;state.lineIndex++;beforeBeatKey=null;afterBeatKey=null;save();renderCurrent()};
-    if(special?.key==='young_louis_fronde'){
-      hidePersistentSceneVisual();
-      if(showSpecialImage('young_louis_fronde',0,{interactive:true,minHold:350,onContinue:finishDirection}))return;
-      finishDirection();return;
+    // Past Louis remains on screen until the student explicitly taps it.
+    if(resolvedEffect==='flashback_history'){showInteractiveFlashback('louis14','과거의 루이',finishDirection);return}
+    // Remove the awkward freeze after “그건 프랑스입니다.”; advance invisibly.
+    if(scene?.id==='scene-34'&&resolvedEffect==='freeze'){finishDirection();return}
+    // Event images now become persistent scene backdrops. Give the illustration a
+    // short establishing beat, then continue the dialogue on top of the same image.
+    const eventBackdrop=backdropEventFor(scene,state.lineIndex);
+    if(eventBackdrop){
+      showPersistentSceneVisual(eventBackdrop.key);screens.story.classList.add('event-backdrop-mode');
+      hideSpecial();hideProp({immediate:true});hidePinnedSceneDoc();hideFlashback();
+      if(resolvedEffect==='seal')AudioManager.sfx('SEAL');
+      directionTimer=setTimeout(()=>{directionTimer=null;finishDirection()},qaDelay(700));return;
     }
-    if((scene?.id==='scene-28'&&state.lineIndex===2)||(scene?.id==='scene-40'&&state.lineIndex===2)){
-      syncBackdropEventMode();
-      directionTimer=setTimeout(()=>{directionTimer=null;finishDirection()},qaDelay(780));return;
-    }
+    if(!special?.suppressEffect)triggerEffect(resolvedEffect,Object.assign({},line,cue||{}));
     if(special){const interactiveEnabled=!!special.interactive&&!matchMedia('(prefers-reduced-motion: reduce)').matches&&!(teacherPreviewMode&&teacherFastMode);const shown=showSpecialImage(special.key,special.hold||1200,{interactive:interactiveEnabled,minHold:special.minHold||900,onContinue:interactiveEnabled?finishDirection:null});if(shown&&interactiveEnabled)return}
     const delay=qaDelay(Math.max(50,cue?.hold||0,line.delay||90,special?.hold||0));directionTimer=setTimeout(()=>{directionTimer=null;finishDirection()},delay);
   }
@@ -827,6 +920,7 @@
     syncActorPresence(currentScene());syncPersistentProp();syncFinalPressure();
     const s=currentScene();if(!s)return finishStory();
     const line=currentLine();if(!line)return nextScene();
+    if(!state.debate)AudioManager.play(sceneBgmKey?.(s,state.lineIndex)||'ENGLAND');
     syncBackdropEventMode();
     screens.story.classList.toggle('unknown-voice-mode',line.type==='dialogue'&&(line.speaker==='???'||line.actorId==='unknown'));
     if(line.type==='direction')return executeDirection(line);
@@ -838,7 +932,7 @@
   }
 
   function incrementStoryLine(){
-    hideFlashback();state.lineIndex++;beforeBeatKey=null;afterBeatKey=null;save();renderCurrent();
+    state.lineIndex++;beforeBeatKey=null;afterBeatKey=null;save();renderCurrent();
   }
   function advanceStory(){
     if(busy||els.history.open||els.concept.open||els.menu.open||els.teacher.open)return;
@@ -847,7 +941,7 @@
     const line=currentLine();if(!line)return;
     if(line.type==='intertitle'){haptic(8);if(line.effect==='concept_popup')showConceptToast(line.title||'');els.intertitle.classList.add('hidden');incrementStoryLine();return}
     if(finishTyping()){haptic(5);return}
-    const cue=currentCue(),key=lineKey(),quiet=keyQuietTiming(line),instantRebuttal=String(line?.text||'').includes('그건 프랑스입니다.'),beatAfter=instantRebuttal?0:Math.max(cue?.beatAfter||0,quiet?.after||0);
+    const cue=currentCue(),key=lineKey(),quiet=keyQuietTiming(line),beatAfter=Math.max(cue?.beatAfter||0,quiet?.after||0);
     if(beatAfter&&afterBeatKey!==key){
       afterBeatKey=key;busy=true;els.hint.textContent='…';haptic(7);clearDirectionTimer();
       directionTimer=setTimeout(()=>{directionTimer=null;busy=false;incrementStoryLine()},qaDelay(beatAfter));
@@ -863,7 +957,7 @@
       if(!next){state.sceneIndex=nextIndex;state.lineIndex=0;save();busy=false;return finishStory()}
       const newSet=(from?.place!==next?.place)||((SCENE_ASSET_MAP?.[from?.id]||'')!==(SCENE_ASSET_MAP?.[next?.id]||''));
       const timeCue=!!transitionLabelFor(from,next);
-      const move=()=>{state.sceneIndex=nextIndex;state.lineIndex=0;beforeBeatKey=null;afterBeatKey=null;save();pendingSceneEntryHold=(newSet||timeCue)?620:0;prepareScene()};
+      const move=()=>{state.sceneIndex=nextIndex;state.lineIndex=0;beforeBeatKey=null;afterBeatKey=null;save();pendingSceneEntryHold=(newSet||timeCue)?1180:0;prepareScene()};
       if(newSet||timeCue){runSceneFade(from,next,move);return}
       busy=false;move();
     };
@@ -1080,7 +1174,7 @@
     const p=persistentStateForDebug();
     const scene=STORY_DATA[p.sceneIndex];
     const debate=p.debate?`${p.debate.id} / R${p.debate.round+1} / ${p.debate.phase}`:'없음';
-    els.teacherDebug.innerHTML=`<b>${APP_VERSION}</b><span>저장 장면: ${escapeHtml(scene?`SCENE ${String(scene.number).padStart(2,'0')} · ${scene.title}`:'없음')}</span><span>line: ${p.lineIndex} · debate: ${escapeHtml(debate)}</span><span>USED: ${p.usedBullets.length}/${TOTAL_BULLETS} · 기록: ${p.history.length}/${HISTORY_LIMIT}</span><span>FAST QA: ${teacherFastMode?'ON':'OFF'} · sound: ${state.audio?.enabled?'ON':'OFF'}</span><span>교사용 점프는 학생 저장을 변경하지 않습니다.</span>`;
+    els.teacherDebug.innerHTML=`<b>${APP_VERSION}</b><span>저장 장면: ${escapeHtml(scene?`SCENE ${String(scene.number).padStart(2,'0')} · ${scene.title}`:'없음')}</span><span>line: ${p.lineIndex} · debate: ${escapeHtml(debate)}</span><span>USED: ${p.usedBullets.length}/${TOTAL_BULLETS} · 기록: ${p.history.length}/${HISTORY_LIMIT}</span><span>FAST QA: ${teacherFastMode?'ON':'OFF'} · BGM: ${state.audio?.enabled?'ON':'OFF'}</span><span>교사용 점프는 학생 저장을 변경하지 않습니다.</span>`;
   }
   function jumpToScene(index){
     const s=STORY_DATA[index];if(!s)return;beginTeacherPreview();
@@ -1114,6 +1208,20 @@
   }
 
   function restartConfirm(){if(confirm('저장된 진행을 지우고 처음부터 시작할까요?'))startStory(true)}
+  function desiredMusicKey(){
+    if(screens.title?.classList.contains('active'))return 'TITLE';
+    if(screens.debate?.classList.contains('active'))return 'DEBATE';
+    if(screens.story?.classList.contains('active'))return sceneBgmKey?.(currentScene(),state.lineIndex)||'ENGLAND';
+    if(screens.end?.classList.contains('active'))return 'EPILOGUE';
+    return 'TITLE';
+  }
+  function toggleMusic(){
+    const next=!(state.audio?.enabled!==false);
+    if(!state.audio)state.audio={enabled:true,volume:.58};
+    state.audio.enabled=next;AudioManager.enabled(next);
+    if(next)AudioManager.play(desiredMusicKey());
+    save();
+  }
 
   // ---------------- EVENTS ----------------
   els.panel.addEventListener('click',advanceStory);els.intertitle.addEventListener('click',advanceStory);
@@ -1122,8 +1230,11 @@
   els.restart.addEventListener('click',()=>{restartConfirm();requestFullscreenSafe()});
   $('#historyBtn').addEventListener('click',openHistory);$('#conceptBtn').addEventListener('click',openConcepts);$('#menuBtn').addEventListener('click',()=>els.menu.showModal());
   $('#menuHistory').addEventListener('click',()=>{els.menu.close();openHistory()});$('#menuConcept').addEventListener('click',()=>{els.menu.close();openConcepts()});$('#menuRestart').addEventListener('click',restartConfirm);
+  els.music?.addEventListener('click',e=>{e.stopPropagation();toggleMusic()});
+  els.menuMusic?.addEventListener('click',()=>toggleMusic());
   els.sound.addEventListener('click',()=>{state.haptics=!state.haptics;save();if(state.haptics)haptic(18)});
   els.specialLayer?.addEventListener('click',continueSpecial);els.specialContinue?.addEventListener('click',e=>{e.stopPropagation();continueSpecial()});
+  els.flashbackLayer?.addEventListener('click',e=>{if(!els.flashbackLayer.classList.contains('interactive'))return;e.stopPropagation();continueFlashback()});
     els.rebuttalNext.addEventListener('click',continueRebuttal);
   $('#endHistoryBtn').addEventListener('click',openHistory);$('#endConceptBtn').addEventListener('click',openConcepts);$('#endRestartBtn').addEventListener('click',()=>{startStory(true);requestFullscreenSafe()});
   $$('[data-close]').forEach(b=>b.addEventListener('click',()=>$('#'+b.dataset.close).close()));
@@ -1143,7 +1254,7 @@
   ['teacherTapTarget','sceneLabel','debateTopic'].forEach(id=>document.getElementById(id)?.addEventListener('click',teacherSecretTap));
   $('#teacherReset').addEventListener('click',()=>{
     if(confirm('학생용 저장 상태를 완전히 초기화할까요?')){
-      teacherPreviewMode=false;teacherSnapshot=null;teacherFastMode=false;document.body.classList.remove('qa-fast');reset();titleMusicStarted=false;els.teacher.close();updateTeacherPreviewBadge();show('title');
+      teacherPreviewMode=false;teacherSnapshot=null;teacherFastMode=false;document.body.classList.remove('qa-fast');reset();els.teacher.close();updateTeacherPreviewBadge();show('title');
     }
   });
   els.teacherExitPreview?.addEventListener('click',exitTeacherPreview);

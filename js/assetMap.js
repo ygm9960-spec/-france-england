@@ -8,10 +8,10 @@ window.ASSET_MAP = {
     mp_secondary:{default:'images/characters/mp_secondary.webp',firm:'images/characters/mp_secondary.webp'},
     parlement_rep:{default:'images/characters/paris_parlement_rep.webp',firm:'images/characters/paris_parlement_rep.webp'},
     french_official:{default:'images/characters/french_official.webp'},
-    french_general:{default:null},
+    french_general:{default:'images/characters/french_general.webp'},
     french_reporter:{default:'images/characters/french_official.webp'},
     english_general:{default:'images/characters/english_general.webp'},
-    maid:{default:null},
+    maid:{default:'images/characters/maid.webp'},
     elizabeth:{default:'images/characters/elizabeth_i.webp'},
     james1:{default:'images/characters/james_i.webp'},
     charles1:{default:'images/characters/charles_i.webp'},
@@ -47,7 +47,10 @@ window.ASSET_MAP = {
     charles_door_flash:{path:'images/specials/charles_door_flash.webp',label:'찰스 1세의 기억'},
     dream_crown_offer:{path:'images/specials/dream_crown_offer.webp',label:'왕관에 조건을 붙이는 나라'},
     realization_montage:{path:'images/specials/realization_montage.webp',label:'왕을 만든 구조'},
-    mirror_return:{path:'images/specials/mirror_return.webp',label:'마지막 거울'}
+    mirror_return:{path:'images/specials/mirror_return.webp',label:'마지막 거울'},
+    louis_wakes_as_anne:{path:'images/specials/louis_wakes_as_anne.webp',label:'앤의 몸에서 눈뜬 루이'},
+    summon_parliament_event:{path:'images/specials/summon_parliament_event.webp',label:'의회를 소집하라'},
+    sun_king_outburst:{path:'images/specials/sun_king_outburst.webp',label:'태양왕의 폭발'}
   }
 };
 
