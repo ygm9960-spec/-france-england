@@ -2,7 +2,7 @@
   'use strict';
   const $=s=>document.querySelector(s);
   const $$=s=>Array.from(document.querySelectorAll(s));
-  const APP_VERSION='v0.47';
+  const APP_VERSION='v0.48';
   const STORAGE_KEY='sun-king-queen-v0.27'; // preserve existing classroom progress
   const LEGACY_KEYS=['sun-king-queen-v0.26','sun-king-queen-v0.25','sun-king-queen-v0.24','sun-king-queen-v0.23','sun-king-queen-v0.22','sun-king-queen-v0.21','sun-king-queen-v0.20','sun-king-queen-v0.19','sun-king-queen-v0.18','sun-king-queen-v0.17','sun-king-queen-v0.16','sun-king-queen-v0.15','sun-king-queen-v0.14','sun-king-queen-v0.13','sun-king-queen-v0.12','sun-king-queen-v0.11','sun-king-queen-v0.10','sun-king-queen-v0.9','sun-king-queen-v0.8','sun-king-queen-v0.7','sun-king-queen-v0.6','sun-king-queen-v0.5','sun-king-queen-v0.4','sun-king-queen-v0.3','sun-king-queen-v0.2'];
   const TOTAL_BULLETS=LOGIC_BULLETS.length;
@@ -796,10 +796,14 @@
     updateProgress();syncFinalPressure();
     let entryHold=pendingSceneEntryHold;pendingSceneEntryHold=0;
     if(s.id==='scene-06'&&state.lineIndex===0&&!(teacherPreviewMode&&teacherFastMode)){
-      screens.story.classList.remove('eye-opening');void screens.story.offsetWidth;screens.story.classList.add('eye-opening');
+      screens.story.classList.remove('eye-return','eye-opening');void screens.story.offsetWidth;screens.story.classList.add('eye-opening');
       setTimeout(()=>screens.story.classList.remove('eye-opening'),qaDelay(3050));
       entryHold=Math.max(entryHold,2850);
-    }else screens.story.classList.remove('eye-opening');
+    }else if(s.id==='scene-38'&&state.lineIndex===0&&!(teacherPreviewMode&&teacherFastMode)){
+      screens.story.classList.remove('eye-opening','eye-return');void screens.story.offsetWidth;screens.story.classList.add('eye-return');
+      setTimeout(()=>screens.story.classList.remove('eye-return'),qaDelay(2950));
+      entryHold=Math.max(entryHold,2550);
+    }else screens.story.classList.remove('eye-opening','eye-return');
     if(entryHold>0&&!(teacherPreviewMode&&teacherFastMode)){
       clearTyping();els.panel.classList.add('hidden');els.intertitle.classList.add('hidden');busy=true;if(sceneEntryTimer)clearTimeout(sceneEntryTimer);
       sceneEntryTimer=setTimeout(()=>{sceneEntryTimer=null;busy=false;renderCurrent()},qaDelay(entryHold));

@@ -126,8 +126,8 @@
 }
 
 @media(prefers-reduced-motion:reduce){
-  .story-screen .actor.shout-shake .actor-img,.story-screen.eye-opening::before,.story-screen.eye-opening::after{animation:none!important}
-  .story-screen.eye-opening::before,.story-screen.eye-opening::after{display:none!important}
+  .story-screen .actor.shout-shake .actor-img,.story-screen.eye-opening::before,.story-screen.eye-opening::after,.story-screen.eye-return::before,.story-screen.eye-return::after{animation:none!important}
+  .story-screen.eye-opening::before,.story-screen.eye-opening::after,.story-screen.eye-return::before,.story-screen.eye-return::after{display:none!important}
 }
 
 .story-screen:not(.cinematic-text-mode) .dialogue-panel.narration .line-mode::after{content:none!important}
@@ -863,4 +863,31 @@ html,body,#app{
 @media (orientation:landscape) and (max-height:600px){
   .title-screen .music-btn{right:max(8px,env(safe-area-inset-right));top:max(7px,env(safe-area-inset-top));min-height:32px;padding:5px 9px;font-size:8px}
   .title-screen .sound-btn{right:max(8px,env(safe-area-inset-right))!important;top:calc(env(safe-area-inset-top) + 42px)!important;min-height:32px!important;padding:5px 9px!important;font-size:8px!important}
+}
+
+
+/* Returning to Louis's own body: the screen blooms from the center into a
+   blinding white flash, then the light slowly recedes to reveal Versailles. */
+.story-screen.eye-return::before{
+  content:"";position:absolute;inset:0;z-index:170;pointer-events:none;
+  background:radial-gradient(circle at 50% 50%,rgba(255,255,255,1) 0%,rgba(255,255,255,.98) 16%,rgba(255,255,255,.88) 34%,rgba(255,255,255,.32) 58%,rgba(255,255,255,0) 76%);
+  transform:scale(.06);opacity:0;animation:eyeReturnBloomV48 2.85s cubic-bezier(.21,.82,.25,1) both;
+}
+.story-screen.eye-return::after{
+  content:"";position:absolute;inset:0;z-index:169;pointer-events:none;
+  background:rgba(255,255,255,0);animation:eyeReturnWashV48 2.85s ease both;
+}
+@keyframes eyeReturnBloomV48{
+  0%{transform:scale(.06);opacity:0}
+  18%{transform:scale(.34);opacity:.92}
+  42%{transform:scale(.95);opacity:1}
+  58%{transform:scale(1.65);opacity:1}
+  100%{transform:scale(2.45);opacity:0}
+}
+@keyframes eyeReturnWashV48{
+  0%{background:rgba(255,255,255,0)}
+  26%{background:rgba(255,255,255,.28)}
+  45%{background:rgba(255,255,255,.90)}
+  58%{background:rgba(255,255,255,1)}
+  100%{background:rgba(255,255,255,0)}
 }
