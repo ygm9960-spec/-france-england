@@ -1,0 +1,111 @@
+/* v0.43: scene illustration layout, click-to-continue recall, and readable subtitles. */
+
+/* Event illustration is an entire scene, not a small image inside the stage. */
+.story-screen #specialLayer,.story-screen #flashbackLayer{
+  position:absolute!important;inset:0!important;
+  width:100%!important;height:100%!important;
+  max-width:none!important;max-height:none!important;
+  overflow:hidden!important;border:0!important;outline:0!important;
+  background:#050608!important;
+}
+.story-screen #specialLayer{z-index:70!important;display:grid!important;place-items:center!important}
+.story-screen #specialLayer.hidden,.story-screen #flashbackLayer.hidden{display:none!important}
+.story-screen #specialImage{
+  position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
+  max-width:none!important;max-height:none!important;
+  object-fit:contain!important;object-position:center center!important;
+  transform:none!important;border:0!important;box-shadow:none!important;background:#050608!important;
+}
+.story-screen #specialLayer.interactive #specialImage{animation:fullEventEnterV43 .66s ease both!important}
+.story-screen #specialLayer:not(.interactive) #specialImage{animation:specialEventFadeV41 var(--special-duration,1.6s) ease both!important}
+@keyframes fullEventEnterV43{from{opacity:0}to{opacity:1}}
+.story-screen #specialLayer[data-event-key="young_louis_fronde"] #specialImage{
+  filter:grayscale(1) contrast(1.08)!important;
+}
+.story-screen #specialShade{position:absolute!important;inset:0!important;pointer-events:none!important;
+  background:linear-gradient(180deg,transparent 68%,rgba(0,0,0,.33) 100%)!important}
+.story-screen #specialLayer.interactive{pointer-events:auto!important;cursor:pointer}
+.story-screen #specialLayer:not(.interactive){pointer-events:none!important}
+.story-screen #specialLayer.interactive:after{display:none!important}
+.story-screen #specialContinue{right:max(20px,env(safe-area-inset-right))!important;
+  bottom:max(14px,env(safe-area-inset-bottom))!important;z-index:8!important}
+
+/* When a painted event carries dialogue, keep that painting visible throughout
+   its associated lines, with character and prop layers completely absent. */
+.story-screen #persistentSceneLayer{
+  position:absolute!important;inset:0!important;left:0!important;right:0!important;
+  top:0!important;bottom:0!important;width:100%!important;height:100%!important;
+  z-index:24!important;background:#050608!important;
+}
+.story-screen #persistentSceneImage{
+  display:block!important;width:100%!important;height:100%!important;
+  object-fit:contain!important;object-position:center center!important;
+  background:#050608!important;opacity:0!important;
+  transition:opacity .72s ease!important;
+}
+.story-screen #persistentSceneImage.event-visual-ready{opacity:1!important}
+.story-screen.event-backdrop-mode .stage{opacity:0!important;visibility:hidden!important}
+.story-screen.event-backdrop-mode .hud{position:relative!important;z-index:45!important;
+  background:linear-gradient(180deg,rgba(0,0,0,.56),rgba(0,0,0,0))!important}
+.story-screen.event-backdrop-mode .dialogue-panel{z-index:80!important}
+.story-screen.event-backdrop-mode #persistentSceneLayer{pointer-events:none!important}
+.story-screen.event-backdrop-mode .prop-layer,
+.story-screen.event-backdrop-mode .pinned-scene-doc,
+.story-screen.event-backdrop-mode .actor-layer,
+.story-screen.event-backdrop-mode #specialLayer,
+.story-screen.event-backdrop-mode #flashbackLayer,
+.story-screen.event-backdrop-mode .concept-acquire-toast{display:none!important}
+
+/* The past Louis memory does not expire on a timer. A tap on dialogue advances
+   and removes it. Use monochrome rather than leaving warm colour on the portrait. */
+.story-screen #flashbackLayer{z-index:60!important;pointer-events:none!important;
+ display:grid!important;place-items:center!important;background:rgba(3,4,7,.92)!important}
+.story-screen #flashbackImage{max-width:100%!important;max-height:100%!important;
+ width:100%!important;height:100%!important;object-fit:contain!important;
+ filter:grayscale(1) contrast(1.08)!important;clip-path:none!important;
+ animation:fullEventEnterV43 .55s ease both!important}
+.story-screen #flashbackLayer small{bottom:calc(var(--dialog-h) + 15px)!important}
+
+/* Scene 36 used to retain a separate prop card at the top-right of the panel. */
+.story-screen[data-scene-id="scene-36"] .prop-layer,
+.story-screen[data-scene-id="scene-36"] .pinned-scene-doc{display:none!important}
+
+/* Use the newly available horizontal space for long dialogue and narration. */
+.story-screen:not(.cinematic-text-mode):not(.unknown-voice-mode) .dialogue-panel .dialogue-text,
+.story-screen:not(.cinematic-text-mode):not(.unknown-voice-mode) .dialogue-panel.narration .dialogue-text,
+.story-screen:not(.cinematic-text-mode):not(.unknown-voice-mode) .dialogue-panel.narration-atmosphere .dialogue-text,
+.story-screen:not(.cinematic-text-mode):not(.unknown-voice-mode) .dialogue-panel.narration-history .dialogue-text,
+.story-screen:not(.cinematic-text-mode):not(.unknown-voice-mode) .dialogue-panel.long-line .dialogue-text{
+ max-width:none!important;width:100%!important;min-width:0!important;
+ text-wrap:pretty!important;overflow-wrap:break-word!important;
+}
+.story-screen:not(.cinematic-text-mode):not(.unknown-voice-mode) .dialogue-panel{
+  padding-left:14px!important;padding-right:14px!important;
+}
+
+/* Emphasize an exclamation/rebuttal with brief typographic movement, not
+   the v0.41 720/850ms blocking silence. Respect reduced-motion settings. */
+.story-screen .dialogue-panel.emphasis-impact .dialogue-text{
+ animation:dialogueImpactV43 .42s cubic-bezier(.2,.6,.25,1) both!important;
+ font-weight:780!important;
+}
+.story-screen .dialogue-panel.emphasis-impact.key-line .dialogue-text{
+ font-size:clamp(15px,1.65vw,23px)!important;
+}
+@keyframes dialogueImpactV43{
+  0%{translate:0 0;filter:brightness(1)}
+  18%{translate:-2px 0;filter:brightness(1.2)}
+  37%{translate:2px 0;filter:brightness(1.1)}
+  60%{translate:-1px 0}
+  100%{translate:0 0;filter:brightness(1)}
+}
+@media (max-height:500px) and (orientation:landscape){
+  .story-screen .dialogue-panel.emphasis-impact.key-line .dialogue-text{
+    font-size:clamp(13px,2.5vw,19px)!important;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .story-screen .dialogue-panel.emphasis-impact .dialogue-text,
+  .story-screen #specialImage,.story-screen #flashbackImage{animation:none!important}
+  .story-screen #persistentSceneImage{transition:none!important}
+}

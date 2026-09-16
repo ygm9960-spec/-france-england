@@ -6,7 +6,7 @@ const P = window.DIRECTOR_PRESETS = {
   historyEcho:{camera:'close',focus:'mp_leader',beatBefore:420,beatAfter:520,effect:'flashback_history'},
   charlesShock:{camera:'close',focus:'mp_leader',beatBefore:420,beatAfter:1250,effect:'charles_reveal'},
   sunClaim:{camera:'close',focus:'anne_louis',pose:'furious',beatBefore:220,beatAfter:700,effect:'sunburst'},
-  reverse:{camera:'close',focus:'mp_leader',pose:'firm',beatBefore:0,beatAfter:0,effect:'reverse_rebuttal'},
+  reverse:{camera:'close',focus:'mp_leader',pose:'firm',beatBefore:720,beatAfter:850,effect:'reverse_rebuttal'},
   lastMirror:{camera:'close',focus:'louis14',pose:'reflective',beatBefore:250,beatAfter:1400}
 };
 window.DIRECTOR_MAP = {
@@ -25,6 +25,8 @@ window.DIRECTOR_MAP = {
   'scene-29:12':{...P.reversal},
   'scene-31:1':{camera:'close',focus:null,beatBefore:80},'scene-31:7':{camera:'close',focus:'mp_leader',beatBefore:180,beatAfter:320},
   'scene-32:6':{...P.charlesShock},'scene-33:5':{camera:'close',focus:'anne_louis',pose:'furious',beatBefore:160,beatAfter:380},'scene-33:6':{...P.sunClaim},'scene-34:0':{...P.reverse},'scene-34:10':{camera:'close',focus:'mp_leader',pose:'firm',beatBefore:320,beatAfter:620},
+  'scene-36:0':{effect:'show_prop',propKey:'crown',propHold:1250,hold:950},
+  'scene-36:1':{effect:'show_prop',propKey:'tax_ledger',propHold:1350,hold:1150},
   'scene-40:1':{camera:'close',focus:'louis14',pose:'reflective',beatAfter:700},'scene-40:3':{...P.lastMirror}
 };
 window.POSE_TIMELINE = {
