@@ -3,7 +3,7 @@ import path from 'node:path';
 import vm from 'node:vm';
 
 const root=path.resolve(path.dirname(new URL(import.meta.url).pathname),'..');
-const context={console};context.window=context;
+const context={console,document:{title:'',querySelector:()=>null}};context.window=context;
 vm.createContext(context);
 for(const file of ['storyData.js','debateData.js','stageMap.js','assetMap.js','visualMap.js','directorMap.js','portraitLayout.js']){
   vm.runInContext(fs.readFileSync(path.join(root,'js',file),'utf8'),context,{filename:file});
@@ -82,7 +82,7 @@ for(const viewport of [[568,216],[667,245],[844,342],[932,374]]){
 
 const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
 for(const match of html.matchAll(/(?:src|href)="([^"]+)"/g)){
-  const ref=match[1];if(!ref.startsWith('http')&&!ref.startsWith('#'))assert(exists(ref.replace(/^\.\//,'')),`HTML 참조 파일 없음: ${ref}`);
+  const ref=match[1];if(!ref.startsWith('http')&&!ref.startsWith('#'))assert(exists(ref.split('?')[0].replace(/^\.\//,'')),`HTML 참조 파일 없음: ${ref}`);
 }
 for(const cssFile of ['style.css','presentation.css']){
   const css=fs.readFileSync(path.join(root,'css',cssFile),'utf8');

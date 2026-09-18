@@ -891,3 +891,41 @@ html,body,#app{
   58%{background:rgba(255,255,255,1)}
   100%{background:rgba(255,255,255,0)}
 }
+
+
+/* v0.49: past Louis portrait and the line he speaks must share the frame. */
+.story-screen.flashback-dialogue-mode #flashbackLayer{
+  z-index:73!important;pointer-events:none!important;
+}
+.story-screen.flashback-dialogue-mode #dialoguePanel{z-index:97!important;}
+.story-screen.flashback-dialogue-mode #flashbackLabel{bottom:26%!important;}
+
+/* White return is a center-out scene transition, not a second effect behind black. */
+.story-screen .scene-fade-overlay.return-white-transition,
+.story-screen .scene-fade-overlay.return-white-transition.active{
+  background:transparent!important;opacity:1!important;transition:none!important;
+}
+.story-screen .scene-fade-overlay.return-white-transition .scene-fade-label{display:none!important;}
+.story-screen .scene-fade-overlay.return-white-transition::before{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(circle at 50% 50%,#fff 0%,rgba(255,255,255,.96) 15%,rgba(255,255,255,.65) 39%,rgba(255,255,255,0) 72%);
+  transform:scale(.03);opacity:0;animation:returnCenterBloomV49 3.3s ease-in-out both;
+}
+.story-screen .scene-fade-overlay.return-white-transition::after{
+  content:"";position:absolute;inset:0;pointer-events:none;background:#fff;
+  opacity:0;animation:returnWhiteWashV49 3.3s ease-in-out both;
+}
+@keyframes returnCenterBloomV49{
+  0%{transform:scale(.03);opacity:0}
+  18%{transform:scale(.48);opacity:.90}
+  46%{transform:scale(1.62);opacity:1}
+  62%{transform:scale(2.25);opacity:1}
+  100%{transform:scale(2.55);opacity:0}
+}
+@keyframes returnWhiteWashV49{
+  0%{opacity:0} 24%{opacity:.18} 44%,53%{opacity:1} 100%{opacity:0}
+}
+@media(prefers-reduced-motion:reduce){
+  .story-screen .scene-fade-overlay.return-white-transition::before,
+  .story-screen .scene-fade-overlay.return-white-transition::after{animation:none!important;opacity:0!important}
+}

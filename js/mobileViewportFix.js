@@ -1,11 +1,11 @@
-/* v0.46 - full viewport / clean title fix */
+/* v0.49 - full viewport / clean title fix */
 (()=>{
   'use strict';
   const root=document.documentElement;
   const $=q=>document.querySelector(q);
-  document.title='태양왕이 여왕이 되었다 · v0.46';
+  document.title='태양왕이 여왕이 되었다 · v0.49';
   const versionTag=document.querySelector('.version-tag');
-  if(versionTag)versionTag.textContent='GAME / COMPLETE SOUNDTRACK · v0.46';
+  if(versionTag)versionTag.textContent='GAME / VERIFIED QA FIX · v0.49';
 
   function syncViewport(){
     const vv=window.visualViewport;

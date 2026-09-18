@@ -2,7 +2,7 @@
   'use strict';
   const $=s=>document.querySelector(s);
   const $$=s=>Array.from(document.querySelectorAll(s));
-  const APP_VERSION='v0.48';
+  const APP_VERSION='v0.49';
   const STORAGE_KEY='sun-king-queen-v0.27'; // preserve existing classroom progress
   const LEGACY_KEYS=['sun-king-queen-v0.26','sun-king-queen-v0.25','sun-king-queen-v0.24','sun-king-queen-v0.23','sun-king-queen-v0.22','sun-king-queen-v0.21','sun-king-queen-v0.20','sun-king-queen-v0.19','sun-king-queen-v0.18','sun-king-queen-v0.17','sun-king-queen-v0.16','sun-king-queen-v0.15','sun-king-queen-v0.14','sun-king-queen-v0.13','sun-king-queen-v0.12','sun-king-queen-v0.11','sun-king-queen-v0.10','sun-king-queen-v0.9','sun-king-queen-v0.8','sun-king-queen-v0.7','sun-king-queen-v0.6','sun-king-queen-v0.5','sun-king-queen-v0.4','sun-king-queen-v0.3','sun-king-queen-v0.2'];
   const TOTAL_BULLETS=LOGIC_BULLETS.length;
@@ -43,7 +43,7 @@
   let beforeBeatKey=null,afterBeatKey=null;
   let teacherFastMode=false;
   let finalLockScenePlayed=null;
-  let specialTimer=null,specialReadyTimer=null,specialDone=null,specialReady=false,flashbackDone=null;
+  let specialTimer=null,specialReadyTimer=null,specialDone=null,specialReady=false,flashbackDone=null,pinnedFlashbackSceneId=null,pinnedFlashbackUntilLine=-1;
   let openingTimerA=null,openingTimerB=null,conceptToastTimer=null,propHideTimer=null,propExitTimer=null,propReleaseTimer=null,actionBeatTimerA=null,actionBeatTimerB=null,sceneEntryTimer=null,sceneExitTimer=null,pendingSceneEntryHold=0,debateReadTimer=null,debateReadKey=null,debateReadLocked=false,debateExitTimer=null;
   let lastStoryInputAt=0;
   const assetPreloadCache=new Map();
@@ -104,7 +104,7 @@
     try{localStorage.removeItem(STORAGE_KEY);LEGACY_KEYS.forEach(k=>localStorage.removeItem(k))}catch{}
   }
   function reset(){
-    clearTyping();clearDirectionTimer();clearSpecialState();clearOpeningNarration();hidePersistentSceneVisual();hidePinnedSceneDoc();screens.story?.classList.remove('ending-fade','opening-black','unknown-voice-mode','eye-opening','event-backdrop-mode','dream-memory-mode');els.sceneFadeOverlay?.classList.add('hidden');hideConceptToast();clearActionBeat();hideProp({immediate:true});clearDebateReadWindow();if(propReleaseTimer)clearTimeout(propReleaseTimer);propReleaseTimer=null;if(sceneEntryTimer)clearTimeout(sceneEntryTimer);if(sceneExitTimer)clearTimeout(sceneExitTimer);if(debateExitTimer)clearTimeout(debateExitTimer);sceneEntryTimer=null;sceneExitTimer=null;debateExitTimer=null;pendingSceneEntryHold=0;
+    clearTyping();clearDirectionTimer();clearSpecialState();clearOpeningNarration();hidePersistentSceneVisual();hidePinnedSceneDoc();screens.story?.classList.remove('ending-fade','opening-black','unknown-voice-mode','eye-opening','eye-return','flashback-dialogue-mode','event-backdrop-mode','dream-memory-mode');els.sceneFadeOverlay?.classList.add('hidden');hideConceptToast();clearActionBeat();hideProp({immediate:true});clearDebateReadWindow();if(propReleaseTimer)clearTimeout(propReleaseTimer);propReleaseTimer=null;if(sceneEntryTimer)clearTimeout(sceneEntryTimer);if(sceneExitTimer)clearTimeout(sceneExitTimer);if(debateExitTimer)clearTimeout(debateExitTimer);sceneEntryTimer=null;sceneExitTimer=null;debateExitTimer=null;pendingSceneEntryHold=0;
     if(!teacherPreviewMode)clearPersistent();
     const keepHaptics=state?.haptics!==false;const keepAudio=clone(state?.audio||{enabled:true,volume:.58});
     AudioManager?.stopAll?.();state=baseState();state.haptics=keepHaptics;state.audio=keepAudio;busy=false;beforeBeatKey=null;afterBeatKey=null;updateTitle();
@@ -234,9 +234,18 @@
   function runSceneFade(from,to,onBlack){
     const overlay=els.sceneFadeOverlay,labelEl=els.sceneFadeLabel;
     if(!overlay||teacherPreviewMode&&teacherFastMode){onBlack();return;}
-    const label=transitionLabelFor(from,to);
+    const isReturn=to?.id==='scene-38';
+    const label=isReturn?'':transitionLabelFor(from,to);
     if(labelEl)labelEl.textContent=label;
-    if(shouldPlayPassage(from,to))AudioManager?.stinger?.('PASSAGE');
+    overlay.classList.toggle('return-white-transition',isReturn);
+    if(shouldPlayPassage(from,to)&&!isReturn)AudioManager?.stinger?.('PASSAGE');
+    if(isReturn){
+      overlay.classList.remove('hidden','fade-out');overlay.setAttribute('aria-hidden','false');
+      requestAnimationFrame(()=>requestAnimationFrame(()=>overlay.classList.add('active')));
+      setTimeout(()=>onBlack(),qaDelay(1500));
+      setTimeout(()=>{overlay.classList.remove('active','fade-out','return-white-transition');overlay.classList.add('hidden');overlay.setAttribute('aria-hidden','true')},qaDelay(3350));
+      return;
+    }
     overlay.classList.remove('hidden','fade-out');
     overlay.setAttribute('aria-hidden','false');
     requestAnimationFrame(()=>requestAnimationFrame(()=>overlay.classList.add('active')));
@@ -303,10 +312,17 @@
     let active=0,currentKey=null,unlocked=false,fadeToken=0,stingerToken=0,duck=1;
     function cfgFor(key){return AUDIO_MAP?.bgm?.[key]||null}
     function targetFor(key){const cfg=cfgFor(key);return state.audio.enabled&&cfg?Math.min(1,(cfg.volume??1)*state.audio.volume*duck):0}
+    const rampTokens=new WeakMap();
     function rampVolume(audio,target,dur=420,tokenGuard=null){
+      const seq=(rampTokens.get(audio)||0)+1;rampTokens.set(audio,seq);
       const startVol=Number(audio.volume)||0,start=performance.now();
-      const token=tokenGuard;
-      const step=now=>{if(token&&token()===false)return;const x=Math.min(1,(now-start)/Math.max(1,dur));audio.volume=startVol+(target-startVol)*x;if(x<1)requestAnimationFrame(step)};
+      const safeTarget=Math.max(0,Math.min(1,target));
+      const step=now=>{
+        if(rampTokens.get(audio)!==seq||(tokenGuard&&tokenGuard()===false))return;
+        const x=Math.max(0,Math.min(1,(now-start)/Math.max(1,dur)));
+        audio.volume=Math.max(0,Math.min(1,startVol+(safeTarget-startVol)*x));
+        if(x<1)requestAnimationFrame(step);
+      };
       requestAnimationFrame(step);
     }
     function unlock(){unlocked=true}
@@ -342,22 +358,23 @@
       // If the requested track is already fading in on the other channel, finish that crossfade instead of layering more audio.
       if(pending._bgmPath===path&&!pending.paused){
         const token=++fadeToken,start=performance.now(),dur=teacherFastMode?80:420,fromStart=Number(from.volume)||0,pendingStart=Number(pending.volume)||0;
-        const step=now=>{if(token!==fadeToken)return;const x=Math.min(1,(now-start)/dur);pending.volume=pendingStart+(target-pendingStart)*x;from.volume=Math.max(0,fromStart*(1-x));if(x<1)requestAnimationFrame(step);else{try{from.pause();from.currentTime=0;from._bgmPath=''}catch{}active=1-active}};
+        rampTokens.set(from,(rampTokens.get(from)||0)+1);rampTokens.set(pending,(rampTokens.get(pending)||0)+1);
+        const step=now=>{if(token!==fadeToken)return;const x=Math.max(0,Math.min(1,(now-start)/dur));pending.volume=pendingStart+(target-pendingStart)*x;from.volume=Math.max(0,fromStart*(1-x));if(x<1)requestAnimationFrame(step);else{try{from.pause();from.currentTime=0;from._bgmPath=''}catch{}active=1-active}};
         requestAnimationFrame(step);
         return;
       }
       const next=1-active,to=channels[next],token=++fadeToken;
+      rampTokens.set(from,(rampTokens.get(from)||0)+1);rampTokens.set(to,(rampTokens.get(to)||0)+1);
       try{
-        try{sting.pause();sting.currentTime=0;sting.volume=0}catch{}
         to.src=path;to._bgmPath=path;to.loop=true;to.currentTime=0;to.volume=0;
         const pr=to.play();
         if(pr&&pr.catch)pr.catch(()=>{
-          if(token!==fadeToken)return;
-          try{from.pause();from.src=path;from._bgmPath=path;from.loop=true;from.currentTime=0;from.volume=target;const retry=from.play();if(retry&&retry.catch)retry.catch(()=>{});active=active}catch{}
+          if(token!==fadeToken)return;fadeToken++;
+          try{to.pause();from.pause();from.src=path;from._bgmPath=path;from.loop=true;from.currentTime=0;from.volume=target;const retry=from.play();if(retry&&retry.catch)retry.catch(()=>{});}catch{}
         });
       }catch{return}
       const start=performance.now(),dur=teacherFastMode?80:900,fromStart=Number(from.volume)||0;
-      const step=now=>{if(token!==fadeToken)return;const x=Math.min(1,(now-start)/dur);to.volume=target*x;from.volume=Math.max(0,fromStart*(1-x));if(x<1)requestAnimationFrame(step);else{try{from.pause();from.currentTime=0;from._bgmPath=''}catch{}active=next}};
+      const step=now=>{if(token!==fadeToken)return;const x=Math.max(0,Math.min(1,(now-start)/dur));to.volume=target*x;from.volume=Math.max(0,fromStart*(1-x));if(x<1)requestAnimationFrame(step);else{try{from.pause();from.currentTime=0;from._bgmPath=''}catch{}active=next}};
       requestAnimationFrame(step);
     }
     function stinger(key){
@@ -709,7 +726,7 @@
   }
   function continueSpecial(){if(!specialReady||!specialDone)return;const done=specialDone;specialDone=null;specialReady=false;hideSpecial();haptic(6);done()}
   function hideFlashback(){
-    flashbackDone=null;pinnedFlashbackSceneId=null;pinnedFlashbackUntilLine=-1;
+    flashbackDone=null;pinnedFlashbackSceneId=null;pinnedFlashbackUntilLine=-1;screens.story?.classList.remove('flashback-dialogue-mode');
     els.flashbackLayer?.classList.add('hidden');
     els.flashbackLayer?.classList.remove('interactive');
     els.flashbackLayer?.setAttribute('aria-hidden','true');
@@ -721,7 +738,7 @@
     showOverlayImage(resolveActorAsset?.(actorId,'default'),label||def?.code||'',def?.name||label||actorId,actorId,0);
     els.flashbackLayer?.classList.remove('interactive');
     pinnedFlashbackSceneId=currentScene()?.id||null;
-    pinnedFlashbackUntilLine=untilLine;
+    pinnedFlashbackUntilLine=untilLine;screens.story?.classList.add('flashback-dialogue-mode');
   }
   function syncPinnedFlashback(){
     if(!pinnedFlashbackSceneId)return;
@@ -800,9 +817,9 @@
       setTimeout(()=>screens.story.classList.remove('eye-opening'),qaDelay(3050));
       entryHold=Math.max(entryHold,2850);
     }else if(s.id==='scene-38'&&state.lineIndex===0&&!(teacherPreviewMode&&teacherFastMode)){
-      screens.story.classList.remove('eye-opening','eye-return');void screens.story.offsetWidth;screens.story.classList.add('eye-return');
-      setTimeout(()=>screens.story.classList.remove('eye-return'),qaDelay(2950));
-      entryHold=Math.max(entryHold,2550);
+      // The center-out white bloom began in scene 37; reveal Versailles after it clears.
+      screens.story.classList.remove('eye-opening','eye-return');
+      entryHold=Math.max(entryHold,1950);
     }else screens.story.classList.remove('eye-opening','eye-return');
     if(entryHold>0&&!(teacherPreviewMode&&teacherFastMode)){
       clearTyping();els.panel.classList.add('hidden');els.intertitle.classList.add('hidden');busy=true;if(sceneEntryTimer)clearTimeout(sceneEntryTimer);
