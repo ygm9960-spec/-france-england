@@ -7,8 +7,42 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title>태양왕이 여왕이 되었다 · v0.49</title>
-  <link rel="stylesheet" href="css/style.css">
+  <title>태양왕이 여왕이 되었다 · v0.51</title>
+  <link rel="stylesheet" href="css/style.css?v=050">
+
+  <style>
+    #sunRecovery{position:fixed;inset:0;z-index:100000;background:rgba(5,8,13,.97);color:#f1ece1;display:none;align-items:center;justify-content:center;padding:26px;font-family:system-ui,sans-serif;text-align:center}
+    #sunRecovery.is-visible{display:flex}#sunRecovery>div{max-width:460px}#sunRecovery h2{margin:0 0 12px;font-size:23px}#sunRecovery p{line-height:1.6;font-size:15px}#sunRecovery button{margin-top:14px;padding:12px 20px;background:#d7ba72;color:#17130c;border:0;border-radius:7px;font-weight:800;cursor:pointer}
+  </style>
+  <script>
+  (function(){
+    var hasFatal=false;
+    function showProblem(){var el=document.getElementById('sunRecovery');if(el)el.classList.add('is-visible');}
+    window.addEventListener('error',function(ev){
+      if(ev instanceof ErrorEvent && ev.message && !/ResizeObserver loop/i.test(ev.message)){hasFatal=true;showProblem();}
+    });
+    window.addEventListener('unhandledrejection',function(ev){
+      var msg=String(ev.reason||'');if(/Loading chunk|ReferenceError|SyntaxError|TypeError/.test(msg)){hasFatal=true;showProblem();}
+    });
+    window.sunKingHardRefresh=async function(){
+      var btn=document.getElementById('sunRecoveryButton');if(btn)btn.disabled=true;
+      try{if('caches' in window){var names=await caches.keys();await Promise.all(names.filter(function(k){return k.startsWith('sun-king-queen-')}).map(function(k){return caches.delete(k)}));}
+        if(navigator.serviceWorker){var regs=await navigator.serviceWorker.getRegistrations();await Promise.all(regs.filter(function(r){return r.scope.includes('/-france-england/')||r.scope.includes('127.0.0.1')}).map(function(r){return r.unregister()}));}}
+      catch(err){}
+      var url=new URL(location.href);url.searchParams.set('refresh',String(Date.now()));location.replace(url.href);
+    };
+    window.addEventListener('DOMContentLoaded',function(){
+      var btn=document.getElementById('startBtn');if(!btn)return;
+      btn.addEventListener('click',function(){setTimeout(function(){
+        if(hasFatal)return;
+        var story=document.getElementById('storyScreen');if(!story||!story.classList.contains('active'))return;
+        var isShown=function(id){var el=document.getElementById(id);return !!el && getComputedStyle(el).display!=='none' && getComputedStyle(el).visibility!=='hidden'};
+        var panel=document.getElementById('dialogueText');var intro=document.getElementById('openingNarrationText');
+        if(!isShown('openingNarrationOverlay')&&!isShown('intertitleOverlay')&&!isShown('actionBeatOverlay') && (!isShown('dialoguePanel') || !(panel&&panel.textContent.trim()))){showProblem();}
+      },4300);});
+    });
+  })();
+  </script>
 </head>
 <body>
   <div id="rotateNotice" class="rotate-notice" aria-hidden="true">
@@ -19,9 +53,10 @@
 
   <button id="teacherPreviewBadge" class="teacher-preview-badge hidden">교사용 미리보기 · 종료</button>
 
+  <div id="sunRecovery" role="alertdialog" aria-labelledby="sunRecoveryTitle" aria-modal="true"><div><h2 id="sunRecoveryTitle">게임을 불러오지 못했습니다</h2><p>일부 파일이 이전 버전과 섞여 있을 수 있습니다. 저장된 진행 기록을 지우지 않고 최신 파일을 다시 불러옵니다.</p><button id="sunRecoveryButton" type="button" onclick="sunKingHardRefresh()">최신 파일 다시 불러오기</button></div></div>
   <main id="app">
     <section id="titleScreen" class="screen title-screen active" aria-label="시작 화면">
-      <img class="title-poster-img" src="images/specials/title_poster.webp" alt="" aria-hidden="true">
+      <img class="title-poster-img" src="images/specials/title_poster.webp?v=050" alt="" aria-hidden="true">
       <div class="title-copy">
         <p class="eyebrow reveal r1">1702 · FRANCE × ENGLAND</p>
         <h1 id="teacherTapTarget" class="reveal r2">태양왕이<br><em>여왕이 되었다</em></h1>
@@ -32,7 +67,7 @@
           <button id="restartBtn" class="ghost hidden">처음부터 시작</button>
         </div>
       </div>
-      <div class="version-tag">GAME / VERIFIED QA FIX · v0.49</div>
+      <div class="version-tag">GAME / FULL PLAYBACK REPAIR · v0.51</div>
       <button id="fullscreenBtn" class="icon-btn fullscreen-btn" aria-label="전체화면 전환">전체화면</button>
       <button id="musicBtn" class="icon-btn music-btn" aria-label="배경음악 설정">음악 ON</button>
       <button id="soundBtn" class="icon-btn sound-btn" aria-label="진동 설정">진동 ON</button>
@@ -183,7 +218,7 @@
   </dialog>
 
   <dialog id="teacherDialog" class="teacher-dialog">
-    <div class="dialog-head"><div><small>TEACHER TOOLS · v0.49</small><h2>교사용 테스트</h2></div><button data-close="teacherDialog">닫기</button></div>
+    <div class="dialog-head"><div><small>TEACHER TOOLS · v0.51</small><h2>교사용 테스트</h2></div><button data-close="teacherDialog">닫기</button></div>
     <div id="teacherDebug" class="teacher-debug"></div>
     <div class="teacher-quick">
       <button data-debate-jump="tax">DEBATE 1 테스트</button>
@@ -201,19 +236,20 @@
     <button id="teacherReset" class="danger">학생용 저장 상태 초기화</button>
   </dialog>
 
-  <script src="js/storyData.js"></script>
-  <script src="js/debateData.js"></script>
-  <script src="js/stageMap.js"></script>
-  <script src="js/assetMap.js"></script>
-  <script src="js/audioMap.js"></script>
-  <script src="js/visualMap.js"></script>
-  <script src="js/directorMap.js"></script>
-  <link rel="stylesheet" href="css/presentation.css">
-  <link rel="stylesheet" href="css/playerFlowFix.css">
-  <link rel="stylesheet" href="css/mobileViewportFix.css?v=049">
-  <link rel="stylesheet" href="css/v034InteractionFix.css?v=049">
-  <script src="js/portraitLayout.js"></script>
-  <script src="js/app.js"></script>
-  <script src="js/mobileViewportFix.js?v=049"></script>
+  <script src="js/storyData.js?v=050"></script>
+  <script src="js/debateData.js?v=050"></script>
+  <script src="js/stageMap.js?v=050"></script>
+  <script src="js/assetMap.js?v=050"></script>
+  <script src="js/audioMap.js?v=050"></script>
+  <script src="js/visualMap.js?v=050"></script>
+  <script src="js/directorMap.js?v=050"></script>
+  <link rel="stylesheet" href="css/presentation.css?v=050">
+  <link rel="stylesheet" href="css/playerFlowFix.css?v=050">
+  <link rel="stylesheet" href="css/mobileViewportFix.css?v=050">
+  <link rel="stylesheet" href="css/v034InteractionFix.css?v=050">
+  <script src="js/portraitLayout.js?v=050"></script>
+  <script src="js/app.js?v=050"></script>
+  <script src="js/mobileViewportFix.js?v=050"></script>
+  <script>if(window.SUN_KING_RUNTIME_VERSION!=='v0.51'){document.getElementById('sunRecovery')?.classList.add('is-visible');}</script>
 </body>
 </html>

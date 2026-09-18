@@ -71,7 +71,8 @@ window.SCENE_PROP_MAP = {
   'scene-22':'europe_war_map','scene-23':'europe_war_map','scene-24':'europe_war_map',
   'scene-28':'dream_red_seal','scene-30':'bill_of_rights','scene-31':'bill_of_rights','scene-34':'bill_of_rights','scene-36':'crown'
 };
-window.resolveAsset=function(type,key){const entry=window.ASSET_MAP?.[type]?.[key];return entry?.path||entry||null};
-window.resolveActorAsset=function(actorId,variant='default'){const actor=window.ASSET_MAP?.actors?.[actorId];if(!actor)return null;return actor[variant]||actor.default||null};
-window.resolveDocumentMeta=function(key){return window.ASSET_MAP?.documents?.[key]||null};
-window.resolveSpecialMeta=function(key){return window.ASSET_MAP?.specials?.[key]||null};
+window.assetUrl=function(path){if(!path||typeof path!=='string')return path;return path.startsWith('images/')?`${path}?v=050`:path};
+window.resolveAsset=function(type,key){const entry=window.ASSET_MAP?.[type]?.[key];return window.assetUrl(entry?.path||entry||null)};
+window.resolveActorAsset=function(actorId,variant='default'){const actor=window.ASSET_MAP?.actors?.[actorId];if(!actor)return null;return window.assetUrl(actor[variant]||actor.default||null)};
+window.resolveDocumentMeta=function(key){const entry=window.ASSET_MAP?.documents?.[key];return entry?{...entry,path:window.assetUrl(entry.path)}:null};
+window.resolveSpecialMeta=function(key){const entry=window.ASSET_MAP?.specials?.[key];return entry?{...entry,path:window.assetUrl(entry.path)}:null};

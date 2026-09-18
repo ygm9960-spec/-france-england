@@ -2,7 +2,8 @@
   'use strict';
   const $=s=>document.querySelector(s);
   const $$=s=>Array.from(document.querySelectorAll(s));
-  const APP_VERSION='v0.49';
+  const APP_VERSION='v0.51';
+  window.SUN_KING_RUNTIME_VERSION=APP_VERSION;
   const STORAGE_KEY='sun-king-queen-v0.27'; // preserve existing classroom progress
   const LEGACY_KEYS=['sun-king-queen-v0.26','sun-king-queen-v0.25','sun-king-queen-v0.24','sun-king-queen-v0.23','sun-king-queen-v0.22','sun-king-queen-v0.21','sun-king-queen-v0.20','sun-king-queen-v0.19','sun-king-queen-v0.18','sun-king-queen-v0.17','sun-king-queen-v0.16','sun-king-queen-v0.15','sun-king-queen-v0.14','sun-king-queen-v0.13','sun-king-queen-v0.12','sun-king-queen-v0.11','sun-king-queen-v0.10','sun-king-queen-v0.9','sun-king-queen-v0.8','sun-king-queen-v0.7','sun-king-queen-v0.6','sun-king-queen-v0.5','sun-king-queen-v0.4','sun-king-queen-v0.3','sun-king-queen-v0.2'];
   const TOTAL_BULLETS=LOGIC_BULLETS.length;
@@ -446,6 +447,7 @@
   function clearTyping(){if(typing?.timer)clearTimeout(typing.timer);typing=null}
   function clearDirectionTimer(){if(directionTimer)clearTimeout(directionTimer);directionTimer=null}
   const STORY_EMPHASIS_TERMS=[
+    '경들은 이 나라의 역사를 잊은 건 아니겠지?','경들은 이 나라의 역사를 잊은 건 아니겠지?','이 나라의 역사를 잊으신 건 아니겠지요?','폐하께서야말로 영국이 지나온 역사를 잊고 계신 듯합니다.',
     '영국에서 왕은 군림하되 통치하지 않는다.','짐이 곧 국가다!','짐은 태양이다!','국가는 왕 한 사람보다 큽니다.','하늘 없이 혼자 뜨는 것은 아니었군.',
     '왕권신수설','권리장전','관료제','상비군','파리 고등법원','의회','세금','왕권','왕관','전쟁','베르사유 궁전'
   ].sort((a,b)=>b.length-a.length);
@@ -454,7 +456,7 @@
     const raw=String(text).slice(0,limit);
     return raw.split(STORY_EMPHASIS_RE).map(part=>STORY_EMPHASIS_TERMS.includes(part)?`<span class=\"story-emphasis\">${escapeHtml(part)}</span>`:escapeHtml(part)).join('').replace(/\n/g,'<br>');
   }
-  const KEY_LINE_SNIPPETS=['애송이 앤','의회를 소집하라!','영국에서 왕은 군림하되 통치하지 않는다.','짐은 태양이다!','짐이 곧 국가다!','그건 프랑스입니다.','국가는 왕 한 사람보다 큽니다.','태양도…','하늘 없이 혼자 뜨는 것은 아니었군.'];
+  const KEY_LINE_SNIPPETS=['애송이 앤','의회를 소집하라!','영국에서 왕은 군림하되 통치하지 않는다.','짐은 태양이다!','짐이 곧 국가다!','그건 프랑스입니다.','국가는 왕 한 사람보다 큽니다.','태양도…','하늘 없이 혼자 뜨는 것은 아니었군.','경들은 이 나라의 역사를 잊은 건 아니겠지?','이 나라의 역사를 잊으신 건 아니겠지요?','영국이 지나온 역사를 잊고'];
   function isKeyLine(text){const t=String(text||'');return KEY_LINE_SNIPPETS.some(v=>t.includes(v))}
   function typeDelayFor(text){const t=String(text||'');if(isKeyLine(t))return 44;if(t.length>=95)return 24;if(t.length>=70)return 27;if(t.length>=45)return 30;return 34}
   function typeText(text,{instant=false,speed=1}={}){
@@ -904,7 +906,7 @@
     els.speaker.textContent=line.type==='narration'?'':(line.speaker||'');
     const group=line.type==='narration'?'narration':line.type==='monologue'?'monologue':(ACTOR_DEFS?.[line.actorId]?.group||'neutral');
     syncActorPresence(currentScene());
-    const spokenText=String(line.text||''),keyLine=isKeyLine(spokenText),emotionLine=line.type==='dialogue'&&(spokenText.length<=48&&(keyLine||/[!！]/.test(spokenText))),heatedLine=line.type==='dialogue'&&(/처형|짐이\s*곧\s*국가다|짐은\s*태양이다|감히\s*나를|신에게서\s*왔다/.test(spokenText)||currentScene()?.id==='scene-33');
+    const spokenText=String(line.text||''),keyLine=isKeyLine(spokenText),emotionLine=line.type==='dialogue'&&(spokenText.length<=48&&(keyLine||/[!！]/.test(spokenText))),historyEchoLine=line.type==='dialogue'&&/역사를\s*잊|영국이\s*지나온\s*역사/.test(spokenText),heatedLine=line.type==='dialogue'&&(/처형|짐이\s*곧\s*국가다|짐은\s*태양이다|감히\s*나를|신에게서\s*왔다/.test(spokenText)||currentScene()?.id==='scene-33'||historyEchoLine);
     els.panel.dataset.speakerGroup=group;els.panel.classList.toggle('long-line',spokenText.length>=72);els.panel.classList.toggle('key-line',keyLine);
     els.panel.classList.toggle('emotion-line',emotionLine);
     els.panel.classList.toggle('heated-line',heatedLine);
@@ -1002,7 +1004,7 @@
   }
 
   function nextScene(){
-    clearTyping();clearDirectionTimer();clearSpecialState();clearOpeningNarration();clearActionBeat();const from=currentScene(),nextIndex=state.sceneIndex+1,next=STORY_DATA[nextIndex];busy=true;
+    clearTyping();clearDirectionTimer();clearSpecialState();clearOpeningNarration();clearActionBeat();hideFlashback();const from=currentScene(),nextIndex=state.sceneIndex+1,next=STORY_DATA[nextIndex];busy=true;
     const proceed=()=>{
       sceneExitTimer=null;
       if(!next){state.sceneIndex=nextIndex;state.lineIndex=0;save();busy=false;return finishStory()}
